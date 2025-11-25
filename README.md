@@ -2,7 +2,26 @@
 
 > **Aplicativo inteligente de rastreamento nutricional com reconhecimento de alimentos por IA**
 
+## 📖 Sobre o Projeto
+
 CalorIA é um aplicativo mobile desenvolvido em React Native que ajuda você a controlar sua alimentação de forma inteligente. Com reconhecimento de alimentos por IA, acompanhamento nutricional detalhado e interface minimalista, o app facilita o alcance de suas metas de saúde.
+
+### 🎯 Objetivo
+
+O CalorIA foi desenvolvido para simplificar o controle nutricional diário, oferecendo uma experiência intuitiva e completa para usuários que desejam:
+- Acompanhar calorias e macros de forma automática
+- Registrar refeições através de fotos
+- Visualizar progresso através de gráficos detalhados
+- Manter-se motivado com gamificação e conquistas
+- Alcançar metas de saúde de forma sustentável
+
+### 💡 Diferenciais
+
+- **Interface Minimalista**: Design limpo e focado na experiência do usuário
+- **Reconhecimento Inteligente**: Identificação automática de alimentos através de fotos
+- **Acompanhamento Completo**: Gráficos e estatísticas detalhadas do progresso nutricional
+- **Gamificação**: Sistema de conquistas e sequências para manter a motivação
+- **Persistência Local**: Dados armazenados localmente com segurança
 
 ## ✨ Funcionalidades Principais
 
