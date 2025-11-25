@@ -188,9 +188,11 @@ Este projeto é um demo para fins de portfólio.
 
 ## 🙏 Agradecimentos
 
-- Expo team pelo excelente framework
-- Comunidade React Native
-- Todos os mantenedores das bibliotecas utilizadas
+- **Expo Team** pelo excelente framework e ferramentas de desenvolvimento
+- **Comunidade React Native** pela documentação e suporte
+- **React Navigation** pela biblioteca de navegação robusta
+- **Zustand** pela solução de gerenciamento de estado leve e eficiente
+- **Todos os mantenedores** das bibliotecas open source utilizadas neste projeto
 
 ---
 
