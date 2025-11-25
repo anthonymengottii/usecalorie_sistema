@@ -23,9 +23,9 @@ import { useNavigation } from '../../utils/navigation';
 import { COLORS, SPACING } from '../../utils/constants';
 
 const LOADING_MESSAGES = [
-  'Analizando imagen...',
+  'Analisando imagem...',
   'Identificando alimento...',
-  'Calculando nutrición...',
+  'Calculando nutrição...',
   'Preparando resultados...',
 ];
 
@@ -106,7 +106,7 @@ export const ProcessingScreen = () => {
 
   const startProcessing = async () => {
     try {
-      const result = await CameraService.processImage(imageUri);
+      const result = await CameraService.recognizeFood(imageUri);
       setRecognitionResult(result);
       setProgress(100);
 
@@ -114,18 +114,12 @@ export const ProcessingScreen = () => {
       setTimeout(() => {
         navigation.navigate('Confirmation', {
           imageUri,
-          recognitionResult: {
-            ...result,
-            // Serialize Date to string safely
-            timestamp: result.timestamp instanceof Date
-              ? result.timestamp.toISOString()
-              : new Date().toISOString(),
-          },
+          recognitionResult: result,
         });
       }, 500);
     } catch (error) {
       console.error('Processing error:', error);
-      setError('Error al procesar la imagen. Inténtalo de nuevo.');
+      setError('Erro ao processar a imagem. Tente novamente.');
       navigation.goBack();
     }
   };
@@ -149,9 +143,9 @@ export const ProcessingScreen = () => {
       <View style={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <Heading2 style={styles.title}>Analizando Imagen</Heading2>
+          <Heading2 style={styles.title}>Analisando imagem</Heading2>
           <Caption color="textSecondary" style={styles.subtitle}>
-            CalorIA está identificando tu comida usando inteligencia artificial
+            O CalorIA está identificando sua refeição usando inteligência artificial
           </Caption>
         </View>
 
@@ -237,9 +231,9 @@ export const ProcessingScreen = () => {
           <View style={styles.infoContent}>
             <BodyText style={styles.infoEmoji}>🎯</BodyText>
             <View style={styles.infoText}>
-              <BodyText style={styles.infoTitle}>Reconocimiento Inteligente</BodyText>
+              <BodyText style={styles.infoTitle}>Reconhecimento inteligente</BodyText>
               <Caption color="textSecondary">
-                Utilizamos IA avanzada para identificar alimentos y calcular sus valores nutricionales automáticamente.
+                Utilizamos IA avançada para identificar alimentos e calcular os valores nutricionais automaticamente.
               </Caption>
             </View>
           </View>

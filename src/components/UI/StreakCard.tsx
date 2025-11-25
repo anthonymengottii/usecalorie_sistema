@@ -48,30 +48,30 @@ export const StreakCard: React.FC<StreakCardProps> = ({
 
   const getMotivationMessage = () => {
     if (currentStreak === 0) {
-      return '¡Comienza tu racha hoy!';
+      return 'Comece sua sequência hoje!';
     }
     if (currentStreak === 1) {
-      return '¡Gran comienzo!';
+      return 'Excelente começo!';
     }
     if (currentStreak < 7) {
-      return `¡${currentStreak} días seguidos! Sigue así`;
+      return `${currentStreak} dias seguidos! Continue assim`;
     }
     if (currentStreak < 30) {
-      return `¡${currentStreak} días! Estás en racha`;
+      return `${currentStreak} dias! Você está em uma boa sequência`;
     }
     if (currentStreak < 100) {
-      return `¡${currentStreak} días! ¡Eres imparable!`;
+      return `${currentStreak} dias! Você está imparável!`;
     }
-    return `¡${currentStreak} días! ¡Eres una leyenda!`;
+    return `${currentStreak} dias! Você é uma lenda!`;
   };
 
   return (
-    <Card style={[styles.container, isNewRecord && styles.recordContainer]}>
+    <Card style={[styles.container, isNewRecord ? styles.recordContainer : undefined]}>
       <View style={styles.header}>
-        <Heading3 style={styles.title}>Racha de Seguimiento</Heading3>
+        <Heading3 style={styles.title}>Sequência de acompanhamento</Heading3>
         {isActive && (
           <View style={styles.activeBadge}>
-            <Caption style={styles.activeBadgeText}>Activo hoy</Caption>
+            <Caption style={styles.activeBadgeText}>Ativo hoje</Caption>
           </View>
         )}
       </View>
@@ -86,7 +86,7 @@ export const StreakCard: React.FC<StreakCardProps> = ({
             {currentStreak}
           </BodyText>
           <Caption color="textSecondary">
-            {currentStreak === 1 ? 'día' : 'días'} seguidos
+            {currentStreak === 1 ? 'dia' : 'dias'} seguidos
           </Caption>
         </View>
       </View>
@@ -101,7 +101,7 @@ export const StreakCard: React.FC<StreakCardProps> = ({
       {/* Stats row */}
       <View style={styles.statsRow}>
         <View style={styles.statItem}>
-          <Caption color="textSecondary">Mejor racha</Caption>
+          <Caption color="textSecondary">Melhor sequência</Caption>
           <View style={styles.statValueRow}>
             <BodyText style={styles.statValue}>
               {longestStreak}
@@ -113,7 +113,7 @@ export const StreakCard: React.FC<StreakCardProps> = ({
         {isNewRecord && currentStreak > 0 && (
           <View style={styles.recordBadge}>
             <MaterialIcons name="stars" size={16} color={COLORS.surface} style={styles.recordIcon} />
-            <Caption style={styles.recordText}>¡Nuevo récord!</Caption>
+            <Caption style={styles.recordText}>Novo recorde!</Caption>
           </View>
         )}
       </View>
@@ -124,7 +124,7 @@ export const StreakCard: React.FC<StreakCardProps> = ({
           {currentStreak < 7 && (
             <View style={styles.milestone}>
               <Caption color="textSecondary">
-                {7 - currentStreak} días para una semana completa
+                {7 - currentStreak} dias para completar uma semana
               </Caption>
               <View style={styles.milestoneProgress}>
                 <View
@@ -139,7 +139,7 @@ export const StreakCard: React.FC<StreakCardProps> = ({
           {currentStreak >= 7 && currentStreak < 30 && (
             <View style={styles.milestone}>
               <Caption color="textSecondary">
-                {30 - currentStreak} días para un mes completo
+                {30 - currentStreak} dias para completar um mês
               </Caption>
               <View style={styles.milestoneProgress}>
                 <View
@@ -154,7 +154,7 @@ export const StreakCard: React.FC<StreakCardProps> = ({
           {currentStreak >= 30 && currentStreak < 100 && (
             <View style={styles.milestone}>
               <Caption color="textSecondary">
-                {100 - currentStreak} días para el hito de 100 días
+                {100 - currentStreak} dias para alcançar 100 dias
               </Caption>
               <View style={styles.milestoneProgress}>
                 <View

@@ -6,6 +6,7 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { COLORS } from '../utils/constants';
+import type { FoodRecognitionResult } from '../types';
 
 import { CameraScreen } from '../screens/Camera/CameraScreen';
 import { ProcessingScreen } from '../screens/Camera/ProcessingScreen';
@@ -18,7 +19,7 @@ type CameraStackParamList = {
   };
   Confirmation: {
     imageUri: string;
-    recognitionResult: any;
+    recognitionResult: FoodRecognitionResult;
   };
 };
 
@@ -36,14 +37,13 @@ export const CameraStackNavigator = () => {
         headerTitleStyle: {
           fontWeight: '600',
         },
-        headerBackTitleVisible: Boolean(false),
       }}
     >
       <Stack.Screen 
         name="Camera" 
         component={CameraScreen}
         options={{
-          title: 'Escanear Comida',
+          title: 'Escanear refeição',
           headerShown: Boolean(false), // Camera screen handles its own header
         }}
       />
@@ -51,7 +51,7 @@ export const CameraStackNavigator = () => {
         name="Processing" 
         component={ProcessingScreen}
         options={{
-          title: 'Procesando...',
+          title: 'Processando...',
           headerLeft: () => null, // Prevent going back during processing
           gestureEnabled: Boolean(false),
         }}

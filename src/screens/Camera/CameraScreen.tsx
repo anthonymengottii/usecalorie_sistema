@@ -21,7 +21,6 @@ import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
 
-import { Card } from '../../components/UI/Card';
 import { Button } from '../../components/UI/Button';
 import { Heading2, BodyText } from '../../components/UI/Typography';
 import { useNavigation } from '../../utils/navigation';
@@ -46,14 +45,14 @@ export const CameraScreen = () => {
     if (status !== 'granted') {
       Alert.alert(
         'Permisos requeridos',
-        'Necesitamos acceso a tu galería para seleccionar fotos'
+        'Precisamos de acesso à sua galeria para selecionar fotos'
       );
     }
   };
 
   const handleTakePhoto = async () => {
     if (!permission) {
-      Alert.alert('Error', 'No se pudieron verificar los permisos de cámara');
+      Alert.alert('Erro', 'Não foi possível verificar as permissões da câmera');
       return;
     }
 
@@ -61,8 +60,8 @@ export const CameraScreen = () => {
       const { granted } = await requestPermission();
       if (!granted) {
         Alert.alert(
-          'Cámara requerida',
-          'Necesitamos acceso a tu cámara para tomar fotos de la comida'
+        'Câmera necessária',
+        'Precisamos de acesso à sua câmera para tirar fotos dos alimentos'
         );
         return;
       }
@@ -86,7 +85,7 @@ export const CameraScreen = () => {
         navigation.navigate('Processing', { imageUri: photo.uri });
       } catch (error) {
         console.error('Error taking picture:', error);
-        Alert.alert('Error', 'No se pudo tomar la foto');
+        Alert.alert('Erro', 'Não foi possível tirar a foto');
       }
     }
   };
@@ -109,14 +108,14 @@ export const CameraScreen = () => {
       }
     } catch (error) {
       console.error('Error picking image:', error);
-      Alert.alert('Error', 'No se pudo seleccionar la imagen');
+      Alert.alert('Erro', 'Não foi possível selecionar a imagem');
     }
   };
 
   const handleManualEntry = () => {
     Alert.alert(
       'Entrada Manual',
-      'La entrada manual de comidas estará disponible pronto. Esta función te permitirá buscar alimentos en nuestra base de datos o crear entradas personalizadas.'
+      'O registro manual de refeições estará disponível em breve. Você poderá buscar alimentos no nosso banco de dados ou criar entradas personalizadas.'
     );
   };
 
@@ -180,35 +179,23 @@ export const CameraScreen = () => {
         </View>
       </Modal>
       <View style={styles.content}>
-        {/* Camera Preview or Captured Photo */}
-        <Card style={styles.cameraCard}>
-          {capturedPhoto ? (
-            <View style={styles.photoContainer}>
-              <Image source={{ uri: capturedPhoto }} style={styles.capturedImage} />
-              <TouchableOpacity
-                style={styles.removePhotoButton}
-                onPress={() => setCapturedPhoto(null)}
-              >
-                <Text style={styles.removePhotoText}>✕</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.cameraPlaceholder}>
-              <MaterialIcons name="photo-camera" size={64} color={COLORS.textSecondary} />
-              <Heading2 style={styles.cameraTitle}>
-                Escanear Comida
-              </Heading2>
-              <BodyText align="center" color="textSecondary" style={styles.cameraDescription}>
-                Toma una foto de tu comida y nuestra IA identificará automáticamente los alimentos y calculará las calorías.
-              </BodyText>
-            </View>
-          )}
-        </Card>
+        {/* Hero Section */}
+        <View style={styles.heroSection}>
+          <View style={styles.iconContainer}>
+            <MaterialIcons name="photo-camera" size={72} color={COLORS.primary} />
+          </View>
+          <Heading2 style={styles.heroTitle}>
+            Escanear refeição
+          </Heading2>
+          <BodyText align="center" color="textSecondary" style={styles.heroDescription}>
+            Tire uma foto da sua refeição e nossa IA identificará automaticamente os alimentos e calculará as calorias.
+          </BodyText>
+        </View>
 
         {/* Action Buttons */}
         <View style={styles.actions}>
           <Button
-            title="Tomar Foto"
+            title="Tirar foto"
             onPress={handleTakePhoto}
             size="large"
             fullWidth
@@ -217,7 +204,7 @@ export const CameraScreen = () => {
           />
 
           <Button
-            title="Desde Galería"
+            title="Escolher da galeria"
             onPress={handlePickFromGallery}
             variant="outline"
             size="large"
@@ -238,25 +225,25 @@ export const CameraScreen = () => {
         </View>
 
         {/* Tips */}
-        <Card style={styles.tipsCard}>
-          <Heading2 style={styles.tipsTitle}>
-            💡 Consejos para mejores resultados
-          </Heading2>
+        <View style={styles.tipsCard}>
+          <BodyText style={styles.tipsTitle}>
+            💡 Dicas para melhores resultados
+          </BodyText>
           <View style={styles.tipsList}>
-            <BodyText style={styles.tipItem}>
-              • Asegúrate de tener buena iluminación
+            <BodyText color="textSecondary" style={styles.tipItem}>
+              • Garanta uma boa iluminação
             </BodyText>
-            <BodyText style={styles.tipItem}>
-              • Coloca la comida sobre un fondo claro
+            <BodyText color="textSecondary" style={styles.tipItem}>
+              • Use um fundo claro para destacar o alimento
             </BodyText>
-            <BodyText style={styles.tipItem}>
-              • Incluye toda la porción en la foto
+            <BodyText color="textSecondary" style={styles.tipItem}>
+              • Inclua toda a porção na foto
             </BodyText>
-            <BodyText style={styles.tipItem}>
-              • Evita sombras sobre los alimentos
+            <BodyText color="textSecondary" style={styles.tipItem}>
+              • Evite sombras sobre o alimento
             </BodyText>
           </View>
-        </Card>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -269,47 +256,59 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: SPACING.md,
+    padding: SPACING.lg,
+    paddingTop: SPACING.xl,
   },
-  cameraCard: {
-    height: 240,
-    marginBottom: SPACING.md,
+  heroSection: {
+    alignItems: 'center',
+    marginBottom: SPACING.xl,
+    paddingTop: SPACING.lg,
   },
-  cameraPlaceholder: {
-    flex: 1,
+  iconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#E6F7F3',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    gap: SPACING.sm,
-  },
-  cameraEmoji: {
-    fontSize: 64,
     marginBottom: SPACING.lg,
   },
-  cameraTitle: {
-    marginBottom: 0,
+  heroTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: SPACING.sm,
     textAlign: 'center',
   },
-  cameraDescription: {
+  heroDescription: {
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 22,
+    paddingHorizontal: SPACING.md,
   },
   actions: {
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.xl,
   },
   actionButton: {
-    marginBottom: SPACING.sm,
-  },
-  tipsCard: {},
-  tipsTitle: {
     marginBottom: SPACING.md,
-    fontSize: 18,
+  },
+  tipsCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  tipsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: SPACING.md,
+    color: COLORS.text,
   },
   tipsList: {
     gap: SPACING.xs,
   },
   tipItem: {
     lineHeight: 22,
+    fontSize: 14,
   },
   
   // Camera View Styles

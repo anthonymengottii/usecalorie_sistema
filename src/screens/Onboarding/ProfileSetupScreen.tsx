@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Card } from '../../components/UI/Card';
 import { Button } from '../../components/UI/Button';
 import { TextInput } from '../../components/UI/TextInput';
 import { Heading2, Heading3, BodyText, Caption } from '../../components/UI/Typography';
@@ -34,35 +33,35 @@ interface UserProfile {
 
 const GENDER_OPTIONS: { value: Gender; label: string; emoji: string }[] = [
   { value: 'male', label: 'Masculino', emoji: '👨' },
-  { value: 'female', label: 'Femenino', emoji: '👩' },
-  { value: 'other', label: 'Otro', emoji: '🏳️‍⚧️' },
+  { value: 'female', label: 'Feminino', emoji: '👩' },
+  { value: 'other', label: 'Outro', emoji: '🏳️‍⚧️' },
 ];
 
 const ACTIVITY_LEVELS: { value: ActivityLevel; label: string; description: string }[] = [
   { 
     value: 'sedentary', 
-    label: 'Sedentario', 
-    description: 'Poco o nada de ejercicio'
+    label: 'Sedentário', 
+    description: 'Pouco ou nenhum exercício'
   },
   { 
     value: 'light', 
-    label: 'Ligero', 
-    description: 'Ejercicio ligero 1-3 días/semana'
+    label: 'Leve', 
+    description: 'Exercícios leves 1-3 dias/semana'
   },
   { 
     value: 'moderate', 
     label: 'Moderado', 
-    description: 'Ejercicio moderado 3-5 días/semana'
+    description: 'Exercícios moderados 3-5 dias/semana'
   },
   { 
     value: 'active', 
-    label: 'Activo', 
-    description: 'Ejercicio intenso 6-7 días/semana'
+    label: 'Ativo', 
+    description: 'Exercícios intensos 6-7 dias/semana'
   },
   { 
     value: 'very_active', 
-    label: 'Muy Activo', 
-    description: 'Ejercicio muy intenso, trabajo físico'
+    label: 'Muito ativo', 
+    description: 'Exercícios muito intensos, trabalho físico'
   },
 ];
 
@@ -89,22 +88,22 @@ export const ProfileSetupScreen = () => {
     const targetWeight = parseFloat(targetWeightText);
 
     if (!age || age < 13 || age > 120) {
-      Alert.alert('Edad inválida', 'Por favor ingresa una edad entre 13 y 120 años');
+      Alert.alert('Idade inválida', 'Informe uma idade entre 13 e 120 anos');
       return;
     }
 
     if (!weight || weight < 30 || weight > 300) {
-      Alert.alert('Peso inválido', 'Por favor ingresa un peso entre 30 y 300 kg');
+      Alert.alert('Peso inválido', 'Informe um peso entre 30 e 300 kg');
       return;
     }
 
     if (!height || height < 100 || height > 250) {
-      Alert.alert('Altura inválida', 'Por favor ingresa una altura entre 100 y 250 cm');
+      Alert.alert('Altura inválida', 'Informe uma altura entre 100 e 250 cm');
       return;
     }
 
     if (!targetWeight || targetWeight < 30 || targetWeight > 300) {
-      Alert.alert('Peso objetivo inválido', 'Por favor ingresa un peso objetivo entre 30 y 300 kg');
+      Alert.alert('Peso objetivo inválido', 'Informe um peso objetivo entre 30 e 300 kg');
       return;
     }
 
@@ -132,10 +131,10 @@ export const ProfileSetupScreen = () => {
   };
 
   const getBMICategory = (bmi: number) => {
-    if (bmi < 18.5) return { label: 'Bajo peso', color: COLORS.secondary };
+    if (bmi < 18.5) return { label: 'Abaixo do peso', color: COLORS.secondary };
     if (bmi < 25) return { label: 'Peso normal', color: COLORS.success };
     if (bmi < 30) return { label: 'Sobrepeso', color: COLORS.secondary };
-    return { label: 'Obesidad', color: COLORS.error };
+    return { label: 'Obesidade', color: COLORS.error };
   };
 
   const bmi = calculateBMI();
@@ -143,92 +142,92 @@ export const ProfileSetupScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={Boolean(false)}
+      >
         {/* Header */}
         <View style={styles.header}>
-          <Heading2 style={styles.title}>Cuéntanos sobre ti</Heading2>
+          <Heading2 style={styles.title}>Conte sobre você</Heading2>
           <Caption color="textSecondary" style={styles.subtitle}>
-            Esta información nos ayuda a personalizar tus objetivos nutricionales
+            Essas informações nos ajudam a personalizar suas metas nutricionais
           </Caption>
         </View>
 
         {/* Basic Info */}
-        <Card style={styles.section}>
-          <Heading3 style={styles.sectionTitle}>Información Básica</Heading3>
-          
+        <View style={styles.section}>
           <View style={styles.inputRow}>
-            <View style={styles.inputHalf}>
-              <Caption color="textSecondary">Edad</Caption>
+            <View style={styles.inputBox}>
               <TextInput
+                label="Idade"
                 value={ageText}
                 onChangeText={setAgeText}
                 placeholder="25"
                 keyboardType="numeric"
                 maxLength={3}
+                variant="filled"
                 style={styles.input}
               />
-              <Caption color="textSecondary" style={styles.inputHint}>años</Caption>
             </View>
             
-            <View style={styles.inputHalf}>
-              <Caption color="textSecondary">Peso</Caption>
+            <View style={styles.inputBox}>
               <TextInput
+                label="Peso (kg)"
                 value={weightText}
                 onChangeText={setWeightText}
                 placeholder="70"
                 keyboardType="decimal-pad"
+                variant="filled"
                 style={styles.input}
               />
-              <Caption color="textSecondary" style={styles.inputHint}>kg</Caption>
             </View>
           </View>
 
           <View style={styles.inputRow}>
-            <View style={styles.inputHalf}>
-              <Caption color="textSecondary">Altura</Caption>
+            <View style={styles.inputBox}>
               <TextInput
+                label="Altura (cm)"
                 value={heightText}
                 onChangeText={setHeightText}
                 placeholder="170"
                 keyboardType="numeric"
                 maxLength={3}
+                variant="filled"
                 style={styles.input}
               />
-              <Caption color="textSecondary" style={styles.inputHint}>cm</Caption>
             </View>
 
-            <View style={styles.inputHalf}>
-              <Caption color="textSecondary">Peso Objetivo</Caption>
+            <View style={styles.inputBox}>
               <TextInput
+                label="Peso objetivo (kg)"
                 value={targetWeightText}
                 onChangeText={setTargetWeightText}
                 placeholder="65"
                 keyboardType="decimal-pad"
+                variant="filled"
                 style={styles.input}
               />
-              <Caption color="textSecondary" style={styles.inputHint}>kg</Caption>
             </View>
           </View>
 
           {/* BMI Display */}
           {bmi && bmiCategory && (
-            <Card style={[styles.bmiCard, { borderColor: bmiCategory.color }]}>
-              <View style={styles.bmiContent}>
-                <BodyText style={styles.bmiLabel}>Tu IMC:</BodyText>
-                <BodyText style={[styles.bmiValue, { color: bmiCategory.color }]}>
-                  {bmi}
-                </BodyText>
-                <Caption style={[styles.bmiCategory, { color: bmiCategory.color }]}>
-                  {bmiCategory.label}
-                </Caption>
-              </View>
-            </Card>
+            <View style={[styles.bmiCard, { borderLeftColor: bmiCategory.color }]}>
+              <BodyText style={styles.bmiLabel}>Seu IMC:</BodyText>
+              <BodyText style={[styles.bmiValue, { color: bmiCategory.color }]}>
+                {bmi}
+              </BodyText>
+              <Caption style={[styles.bmiCategory, { color: bmiCategory.color }]}>
+                {bmiCategory.label}
+              </Caption>
+            </View>
           )}
-        </Card>
+        </View>
 
         {/* Gender Selection */}
-        <Card style={styles.section}>
-          <Heading3 style={styles.sectionTitle}>Género</Heading3>
+        <View style={styles.section}>
+          <Heading3 style={styles.sectionTitle}>Gênero</Heading3>
           <View style={styles.optionsContainer}>
             {GENDER_OPTIONS.map((option) => (
               <TouchableOpacity
@@ -249,13 +248,13 @@ export const ProfileSetupScreen = () => {
               </TouchableOpacity>
             ))}
           </View>
-        </Card>
+        </View>
 
         {/* Activity Level */}
-        <Card style={styles.section}>
-          <Heading3 style={styles.sectionTitle}>Nivel de Actividad</Heading3>
+        <View style={styles.section}>
+          <Heading3 style={styles.sectionTitle}>Nível de atividade</Heading3>
           <Caption color="textSecondary" style={styles.sectionDescription}>
-            Esto nos ayuda a calcular tus necesidades calóricas diarias
+            Isso nos ajuda a calcular suas necessidades calóricas diárias
           </Caption>
           
           <View style={styles.activityContainer}>
@@ -288,20 +287,7 @@ export const ProfileSetupScreen = () => {
               </TouchableOpacity>
             ))}
           </View>
-        </Card>
-
-        {/* Privacy Note */}
-        <Card style={styles.privacyCard}>
-          <View style={styles.privacyContent}>
-            <BodyText style={styles.privacyEmoji}>🔒</BodyText>
-            <View style={styles.privacyText}>
-              <BodyText style={styles.privacyTitle}>Tu privacidad es importante</BodyText>
-              <Caption color="textSecondary">
-                Esta información se almacena de forma segura en tu dispositivo y se usa únicamente para calcular tus objetivos nutricionales personalizados.
-              </Caption>
-            </View>
-          </View>
-        </Card>
+        </View>
 
         {/* Continue Button */}
         <Button
@@ -341,10 +327,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
   },
   section: {
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.xl,
   },
   sectionTitle: {
     marginBottom: SPACING.md,
+    fontSize: 18,
+    fontWeight: '600',
   },
   sectionDescription: {
     marginBottom: SPACING.md,
@@ -355,39 +343,39 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
     marginBottom: SPACING.md,
   },
-  inputHalf: {
+  inputBox: {
     flex: 1,
-  },
-  inputContainer: {
-    marginBottom: SPACING.md,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: SPACING.sm,
   },
   input: {
-    marginTop: SPACING.xs,
-    marginBottom: SPACING.xs,
-  },
-  inputHint: {
-    fontSize: 12,
+    marginBottom: 0,
   },
   bmiCard: {
-    borderWidth: 2,
+    marginTop: SPACING.md,
+    padding: SPACING.md,
+    borderRadius: 12,
     backgroundColor: COLORS.surface,
-  },
-  bmiContent: {
+    borderLeftWidth: 4,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: SPACING.sm,
   },
   bmiLabel: {
     fontWeight: '500',
+    fontSize: 14,
   },
   bmiValue: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
   },
   bmiCategory: {
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: 13,
+    marginLeft: 'auto',
   },
   optionsContainer: {
     flexDirection: 'row',
@@ -396,26 +384,30 @@ const styles = StyleSheet.create({
   optionButton: {
     flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
     padding: SPACING.md,
     borderRadius: 12,
     borderWidth: 2,
     borderColor: COLORS.border,
     backgroundColor: COLORS.surface,
+    minHeight: 80,
   },
   optionButtonActive: {
     borderColor: COLORS.primary,
-    backgroundColor: COLORS.primary,
+    backgroundColor: '#E6F7F3',
   },
   optionEmoji: {
     fontSize: 24,
     marginBottom: SPACING.xs,
+    textAlign: 'center',
   },
   optionLabel: {
     fontWeight: '500',
     color: COLORS.text,
+    textAlign: 'center',
   },
   optionLabelActive: {
-    color: COLORS.surface,
+    color: COLORS.primary,
     fontWeight: '600',
   },
   activityContainer: {
@@ -430,7 +422,7 @@ const styles = StyleSheet.create({
   },
   activityOptionActive: {
     borderColor: COLORS.primary,
-    backgroundColor: COLORS.primary,
+    backgroundColor: '#E6F7F3',
   },
   activityHeader: {
     flexDirection: 'row',
@@ -443,41 +435,22 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   activityLabelActive: {
-    color: COLORS.surface,
+    color: COLORS.primary,
   },
   checkmark: {
-    color: COLORS.surface,
+    color: COLORS.primary,
     fontWeight: '700',
+    fontSize: 18,
   },
   activityDescription: {
     color: COLORS.textSecondary,
     fontSize: 14,
   },
   activityDescriptionActive: {
-    color: COLORS.surface,
-  },
-  privacyCard: {
-    backgroundColor: COLORS.background,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginBottom: SPACING.lg,
-  },
-  privacyContent: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: SPACING.md,
-  },
-  privacyEmoji: {
-    fontSize: 20,
-  },
-  privacyText: {
-    flex: 1,
-  },
-  privacyTitle: {
-    fontWeight: '600',
-    marginBottom: SPACING.xs,
+    color: COLORS.textSecondary,
   },
   continueButton: {
+    marginTop: SPACING.md,
     marginBottom: SPACING.xl,
   },
 });

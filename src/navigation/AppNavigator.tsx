@@ -16,6 +16,7 @@ import type { RootStackParamList, MainTabParamList } from '../types';
 import { CustomTabBar } from '../components/Navigation/CustomTabBar';
 
 // Import screens
+import { OnboardingCarousel } from '../screens/Onboarding/OnboardingCarousel';
 import { LoginScreen } from '../screens/Auth/LoginScreen';
 import { OnboardingStackNavigator } from './OnboardingStackNavigator';
 import { HomeScreen } from '../screens/Home/HomeScreen';
@@ -109,20 +110,28 @@ export const AppNavigator = () => {
 
   // Determine initial route based on auth state
   const getInitialRouteName = (): keyof RootStackParamList => {
-    if (!isAuthenticated) return 'Auth';
+    if (!isAuthenticated) return 'Landing';
     if (!isOnboardingCompleted) return 'Onboarding';
     return 'Main';
   };
+
+  const navigatorKey = `${isAuthenticated}-${isOnboardingCompleted}`;
 
   return (
     <>
       <StatusBar style="light" />
       <Stack.Navigator
+        key={navigatorKey}
         initialRouteName={getInitialRouteName()}
         screenOptions={{
           headerShown: Boolean(false),
         }}
       >
+        <Stack.Screen 
+          name="Landing" 
+          component={OnboardingCarousel}
+          options={{ headerShown: Boolean(false) }}
+        />
         <Stack.Screen 
           name="Auth" 
           component={LoginScreen}

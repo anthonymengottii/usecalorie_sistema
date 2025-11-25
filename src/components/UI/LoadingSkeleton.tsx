@@ -9,14 +9,16 @@ import {
   StyleSheet,
   Animated,
   ViewStyle,
+  DimensionValue,
+  StyleProp,
 } from 'react-native';
 import { COLORS, SPACING, BORDER_RADIUS } from '../../utils/constants';
 
 interface SkeletonProps {
-  width?: number | string;
+  width?: DimensionValue;
   height?: number;
   borderRadius?: number;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const Skeleton: React.FC<SkeletonProps> = ({
@@ -54,16 +56,18 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 
   return (
     <Animated.View
-      style={[
-        styles.skeleton,
-        {
-          width,
-          height,
-          borderRadius,
-          opacity,
-        },
-        style,
-      ]}
+      style={
+        [
+          styles.skeleton,
+          {
+            width,
+            height,
+            borderRadius,
+          },
+          style,
+          { opacity },
+        ] as Animated.WithAnimatedValue<StyleProp<ViewStyle>>
+      }
     />
   );
 };

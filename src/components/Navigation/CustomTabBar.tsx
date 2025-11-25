@@ -9,7 +9,7 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { MaterialIcons } from '@expo/vector-icons';
 // BlurView completely removed for Android to avoid casting errors
 // import { BlurView } from 'expo-blur';
-import { COLORS } from '../../utils/constants';
+import { COLORS, SPACING } from '../../utils/constants';
 import { logger } from '../../utils/logger';
 
 const getTabIcon = (routeName: string, focused: boolean) => {
@@ -67,7 +67,7 @@ export const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarPro
             const event = navigation.emit({
               type: 'tabPress',
               target: route.key,
-              canPreventDefault: Boolean(true),
+              canPreventDefault: true,
             });
 
             if (!isFocused && !event.defaultPrevented) {
@@ -83,7 +83,7 @@ export const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarPro
           };
 
           // Normalize accessibilityState
-          const accessibilityState = isFocused ? { selected: Boolean(true) } : { selected: Boolean(false) };
+          const accessibilityState = isFocused ? { selected: true } : undefined;
 
           return (
             <TouchableOpacity
@@ -91,10 +91,10 @@ export const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarPro
               accessibilityRole="button"
               accessibilityState={accessibilityState}
               accessibilityLabel={options.tabBarAccessibilityLabel || label}
-              testID={options.tabBarTestID}
               onPress={onPress}
               onLongPress={onLongPress}
               style={styles.tabButton}
+              activeOpacity={0.7}
             >
               <View style={[styles.tabContent, isFocused && styles.tabContentFocused]}>
                 {getTabIcon(route.name, isFocused)}
@@ -121,6 +121,7 @@ const styles = StyleSheet.create({
         paddingBottom: 10,
       },
     }),
+    zIndex: 1000,
   },
   blurContainer: {
     flexDirection: 'row',
@@ -128,12 +129,23 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     backgroundColor: COLORS.surface,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.xs,
     ...Platform.select({
       ios: {
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        backgroundColor: COLORS.surface,
+        shadowColor: '#000',
+        shadowOffset: {
+          width: 0,
+          height: -2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
       },
       android: {
         backgroundColor: COLORS.surface,
+        elevation: 8,
       },
     }),
   },
@@ -141,16 +153,28 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    height: '100%',
   },
   tabContent: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 12,
+    paddingHorizontal: 18,
+    borderRadius: 18,
+    minWidth: 56,
+    minHeight: 44,
   },
   tabContentFocused: {
-    backgroundColor: `${COLORS.primary}15`,
+    backgroundColor: '#E6F7F3',
+    borderRadius: 18,
+    shadowColor: COLORS.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
 });
 

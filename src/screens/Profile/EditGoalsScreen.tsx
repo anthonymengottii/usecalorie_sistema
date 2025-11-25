@@ -55,8 +55,8 @@ export const EditGoalsScreen = () => {
       await firebaseService.saveUserProfile(user.id, updatedProfile);
 
       Alert.alert(
-        'Éxito',
-        'Tus objetivos nutricionales han sido actualizados',
+        'Sucesso',
+        'Suas metas nutricionais foram atualizadas',
         [
           {
             text: 'OK',
@@ -66,7 +66,7 @@ export const EditGoalsScreen = () => {
       );
     } catch (error) {
       console.error('Error updating goals:', error);
-      Alert.alert('Error', 'No se pudieron actualizar los objetivos');
+      Alert.alert('Erro', 'Não foi possível atualizar as metas');
     }
   };
 
@@ -85,18 +85,18 @@ export const EditGoalsScreen = () => {
             color={COLORS.text}
             onPress={() => navigation.goBack()}
           />
-          <Heading2 style={styles.screenTitle}>Editar Objetivos</Heading2>
+          <Heading2 style={styles.screenTitle}>Editar metas</Heading2>
         </View>
 
         <Card style={styles.infoCard}>
           <BodyText color="textSecondary">
-            Personaliza tus objetivos nutricionales diarios según tus necesidades y metas.
+            Personalize suas metas nutricionais diárias de acordo com suas necessidades e objetivos.
           </BodyText>
         </Card>
 
         {/* Calories */}
         <Card style={styles.goalCard}>
-          <Heading3 style={styles.goalLabel}>Calorías Diarias</Heading3>
+          <Heading3 style={styles.goalLabel}>Calorias diárias</Heading3>
           <View style={styles.inputRow}>
             <TextInput
               style={styles.input}
@@ -107,7 +107,7 @@ export const EditGoalsScreen = () => {
             />
             <Caption color="textSecondary">kcal</Caption>
           </View>
-          <Caption color="textSecondary">Basado en tu TDEE: {user?.profile?.tdee?.toFixed(0) || '2000'} kcal</Caption>
+          <Caption color="textSecondary">Baseado no seu TDEE: {user?.profile?.tdee?.toFixed(0) || '2000'} kcal</Caption>
         </Card>
 
         {/* Macros */}
@@ -136,7 +136,7 @@ export const EditGoalsScreen = () => {
           <View style={styles.macroItem}>
             <View style={styles.macroHeader}>
               <MaterialIcons name="grain" size={20} color="#FF9800" />
-              <BodyText style={styles.macroLabel}>Carbohidratos</BodyText>
+              <BodyText style={styles.macroLabel}>Carboidratos</BodyText>
             </View>
             <View style={styles.inputRow}>
               <TextInput
@@ -154,7 +154,7 @@ export const EditGoalsScreen = () => {
           <View style={styles.macroItem}>
             <View style={styles.macroHeader}>
               <MaterialIcons name="opacity" size={20} color="#FFC107" />
-              <BodyText style={styles.macroLabel}>Grasas</BodyText>
+              <BodyText style={styles.macroLabel}>Gorduras</BodyText>
             </View>
             <View style={styles.inputRow}>
               <TextInput
@@ -171,7 +171,7 @@ export const EditGoalsScreen = () => {
 
         {/* Save Button */}
         <Button
-          title="Guardar Cambios"
+          title="Salvar alterações"
           onPress={handleSave}
           size="large"
           fullWidth

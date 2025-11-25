@@ -230,20 +230,27 @@ export interface CycleInfo {
 }
 
 // AI Recognition Types
-export interface FoodRecognitionResult {
-  confidence: number;
-  foods: RecognizedFood[];
-  imageUrl: string;
-  processingTime: number;
+export interface PortionSuggestion {
+  amount: number;
+  unit: string;
+  grams: number;
 }
 
-export interface RecognizedFood {
-  name: string;
+export interface RecognizedFoodAlternative {
+  id: string;
+  food: Food;
   confidence: number;
-  boundingBox?: BoundingBox;
-  nutrition?: NutritionData;
-  servingSize?: ServingSize;
-  alternatives?: string[];
+}
+
+export interface FoodRecognitionResult {
+  id: string;
+  detectedFood: Food;
+  nutrition: NutritionData;
+  imageUrl: string;
+  confidence: number;
+  timestamp: string;
+  suggestedPortion?: PortionSuggestion;
+  alternatives: RecognizedFoodAlternative[];
 }
 
 export interface BoundingBox {
@@ -305,6 +312,7 @@ export interface NutritionTrend {
 
 // Navigation Types
 export type RootStackParamList = {
+  Landing: undefined;
   Auth: undefined;
   Main: undefined;
   Onboarding: undefined;

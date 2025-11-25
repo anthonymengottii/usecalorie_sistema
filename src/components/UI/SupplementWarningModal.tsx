@@ -68,8 +68,8 @@ export const SupplementWarningModal: React.FC<SupplementWarningModalProps> = ({
           <View style={[styles.warningBadge, { backgroundColor: warningColor }]}>
             <Caption style={styles.warningBadgeText}>
               {warning.level === 'info' ? 'INFO' :
-               warning.level === 'caution' ? 'PRECAUCIÓN' :
-               warning.level === 'danger' ? 'PELIGRO' :
+               warning.level === 'caution' ? 'CUIDADO' :
+               warning.level === 'danger' ? 'PERIGO' :
                'CRÍTICO'}
             </Caption>
           </View>
@@ -81,7 +81,7 @@ export const SupplementWarningModal: React.FC<SupplementWarningModalProps> = ({
 
         <View style={styles.recommendationSection}>
           <Caption color="textSecondary" style={styles.recommendationLabel}>
-            Recomendación:
+            Recomendação:
           </Caption>
           <BodyText style={styles.recommendationText}>
             {warning.recommendation}
@@ -94,7 +94,7 @@ export const SupplementWarningModal: React.FC<SupplementWarningModalProps> = ({
             style={styles.learnMoreButton}
           >
             <Caption style={styles.learnMoreText}>
-              Más información →
+              Mais informações →
             </Caption>
           </TouchableOpacity>
         )}
@@ -133,12 +133,12 @@ export const SupplementWarningModal: React.FC<SupplementWarningModalProps> = ({
               <View style={styles.supervisionHeader}>
                 <BodyText style={styles.supervisionIcon}>⚕️</BodyText>
                 <Heading3 style={styles.supervisionTitle}>
-                  Supervisión Médica Obligatoria
+                  Supervisão médica obrigatória
                 </Heading3>
               </View>
               <BodyText style={styles.supervisionText}>
-                Este suplemento requiere prescripción y monitoreo médico continuo.
-                El uso sin supervisión puede causar daños graves e irreversibles a la salud.
+                Este suplemento exige prescrição e acompanhamento médico contínuo.
+                O uso sem orientação pode causar danos graves e irreversíveis à saúde.
               </BodyText>
             </Card>
           )}
@@ -146,7 +146,7 @@ export const SupplementWarningModal: React.FC<SupplementWarningModalProps> = ({
           {/* Dosage Info */}
           {dosage && (
             <Card style={styles.dosageCard}>
-              <Caption color="textSecondary">Dosis ingresada:</Caption>
+              <Caption color="textSecondary">Dose informada:</Caption>
               <BodyText style={styles.dosageText}>
                 {dosage.amount} {dosage.unit}
               </BodyText>
@@ -156,7 +156,7 @@ export const SupplementWarningModal: React.FC<SupplementWarningModalProps> = ({
           {/* Warnings List */}
           <View style={styles.warningsSection}>
             <Heading3 style={styles.sectionTitle}>
-              Información Importante
+              Informações importantes
             </Heading3>
             {warnings.map((warning, index) => renderWarning(warning, index))}
           </View>
@@ -164,8 +164,12 @@ export const SupplementWarningModal: React.FC<SupplementWarningModalProps> = ({
           {/* Disclaimer */}
           <Card style={styles.disclaimerCard}>
             <Caption color="textSecondary" style={styles.disclaimerText}>
-              ⚠️ Esta información es educativa. CalorIA no provee consejos médicos.
-              Consulta siempre con un profesional de salud antes de iniciar cualquier suplemento.
+              ⚠️ Este conteúdo possui caráter informativo. O CalorIA não fornece aconselhamento médico.
+              Consulte sempre um profissional de saúde antes de iniciar qualquer suplementação.
+            </Caption>
+            <Caption color="textSecondary" style={styles.disclaimerText}>
+              ⚠️ Este conteúdo possui caráter informativo. O CalorIA não fornece aconselhamento médico.
+              Consulte sempre um profissional de saúde antes de iniciar qualquer suplementação.
             </Caption>
           </Card>
         </ScrollView>
@@ -175,7 +179,7 @@ export const SupplementWarningModal: React.FC<SupplementWarningModalProps> = ({
           {onConfirm ? (
             <>
               <Button
-                title="He Leído y Entiendo"
+              title="Li e entendi"
                 onPress={onConfirm}
                 variant="primary"
                 style={styles.actionButton}
@@ -189,7 +193,7 @@ export const SupplementWarningModal: React.FC<SupplementWarningModalProps> = ({
             </>
           ) : (
             <Button
-              title="Cerrar"
+              title="Fechar"
               onPress={onClose}
               variant="primary"
               fullWidth

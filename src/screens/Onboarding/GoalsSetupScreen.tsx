@@ -13,7 +13,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute } from '@react-navigation/native';
 
-import { Card } from '../../components/UI/Card';
 import { Button } from '../../components/UI/Button';
 import { Heading2, Heading3, BodyText, Caption } from '../../components/UI/Typography';
 import { COLORS, SPACING } from '../../utils/constants';
@@ -41,36 +40,36 @@ interface WeightRateOption {
 const GOAL_OPTIONS: GoalOption[] = [
   {
     id: 'lose_weight',
-    title: 'Perder Peso',
-    description: 'Crear déficit calórico para perder grasa corporal',
+    title: 'Perder peso',
+    description: 'Criar déficit calórico para reduzir gordura corporal',
     emoji: '📉',
     calorieModifier: 0.85, // 15% reduction
   },
   {
     id: 'maintain_weight',
-    title: 'Mantener Peso',
-    description: 'Equilibrar calorías para mantener peso actual',
+    title: 'Manter peso',
+    description: 'Equilibrar calorias para manter o peso atual',
     emoji: '⚖️',
     calorieModifier: 1.0, // No change
   },
   {
     id: 'gain_weight',
-    title: 'Ganar Peso',
-    description: 'Crear superávit calórico para ganar masa',
+    title: 'Ganhar peso',
+    description: 'Criar superávit calórico para ganhar massa',
     emoji: '📈',
     calorieModifier: 1.15, // 15% increase
   },
   {
     id: 'gain_muscle',
-    title: 'Ganar Músculo',
-    description: 'Optimizar proteína para desarrollo muscular',
+    title: 'Ganhar músculo',
+    description: 'Otimizar proteínas para desenvolvimento muscular',
     emoji: '💪',
     calorieModifier: 1.1, // 10% increase + high protein
   },
   {
     id: 'improve_health',
-    title: 'Mejorar Salud',
-    description: 'Enfoque en nutrición balanceada y bienestar',
+    title: 'Melhorar saúde',
+    description: 'Foco em nutrição equilibrada e bem-estar',
     emoji: '🌱',
     calorieModifier: 1.0, // Maintain with balanced macros
   },
@@ -79,29 +78,38 @@ const GOAL_OPTIONS: GoalOption[] = [
 const WEIGHT_RATE_OPTIONS: WeightRateOption[] = [
   {
     id: 'slow',
-    title: 'Lento y Sostenible',
-    description: '0.25kg por semana',
+    title: 'Lento e sustentável',
+    description: '0,25 kg por semana',
     calorieAdjustment: 250, // ±250 calories
   },
   {
     id: 'moderate',
     title: 'Moderado',
-    description: '0.5kg por semana',
+    description: '0,5 kg por semana',
     calorieAdjustment: 500, // ±500 calories
   },
   {
     id: 'fast',
     title: 'Rápido',
-    description: '0.75kg por semana',
+    description: '0,75 kg por semana',
     calorieAdjustment: 750, // ±750 calories
   },
 ];
 
+interface GoalsSetupProfile {
+  age: number;
+  weight: number;
+  height: number;
+  targetWeight: number;
+  gender: 'male' | 'female' | 'other';
+  activityLevel: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
+}
+
 export const GoalsSetupScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const params = route.params as { userProfile?: any };
-  const userProfile = params.userProfile || null;
+  const params = route.params as { userProfile: GoalsSetupProfile };
+  const userProfile = params.userProfile;
   const [selectedGoal, setSelectedGoal] = useState<GoalType>('maintain_weight');
   const [selectedRate, setSelectedRate] = useState<WeightGoalRate>('moderate');
 
@@ -119,7 +127,7 @@ export const GoalsSetupScreen = () => {
   // Calculate TDEE (Total Daily Energy Expenditure)
   const calculateTDEE = () => {
     const bmr = calculateBMR();
-    const activityMultipliers = {
+    const activityMultipliers: Record<GoalsSetupProfile['activityLevel'], number> = {
       sedentary: 1.2,
       light: 1.375,
       moderate: 1.55,
@@ -131,8 +139,7 @@ export const GoalsSetupScreen = () => {
   };
 
   const calculateWeeklyGoal = () => {
-    const selectedRateOption = WEIGHT_RATE_OPTIONS.find(r => r.id === selectedRate)!;
-    const rateMap = { slow: 0.25, moderate: 0.5, fast: 0.75 };
+    const rateMap: Record<WeightGoalRate, number> = { slow: 0.25, moderate: 0.5, fast: 0.75 };
     return rateMap[selectedRate];
   };
 
@@ -196,7 +203,7 @@ export const GoalsSetupScreen = () => {
       ...userProfile,
       goalType: selectedGoal,
       weeklyGoal: calculateWeeklyGoal(),
-      targetDate: calculateTargetDate(),
+      targetDate: calculateTargetDate().toISOString(),
       bmi: parseFloat(((userProfile.weight / Math.pow(userProfile.height / 100, 2))).toFixed(1)),
       bmr: calculateBMR(),
       tdee: calculateTDEE(),
@@ -212,18 +219,22 @@ export const GoalsSetupScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={Boolean(false)}
+      >
         {/* Header */}
         <View style={styles.header}>
-          <Heading2 style={styles.title}>¿Cuál es tu objetivo?</Heading2>
+          <Heading2 style={styles.title}>Qual é o seu objetivo?</Heading2>
           <Caption color="textSecondary" style={styles.subtitle}>
-            Basaremos tus recomendaciones nutricionales en tu objetivo principal
+            Vamos basear suas recomendações nutricionais no seu objetivo principal
           </Caption>
         </View>
 
         {/* Goal Selection */}
-        <Card style={styles.section}>
-          <Heading3 style={styles.sectionTitle}>Objetivo Principal</Heading3>
+        <View style={styles.section}>
+          <Heading3 style={styles.sectionTitle}>Objetivo principal</Heading3>
           <View style={styles.goalsContainer}>
             {GOAL_OPTIONS.map((goal) => (
               <TouchableOpacity
@@ -257,16 +268,16 @@ export const GoalsSetupScreen = () => {
               </TouchableOpacity>
             ))}
           </View>
-        </Card>
+        </View>
 
         {/* Weight Change Rate (conditional) */}
         {showWeightRateOptions && (
-          <Card style={styles.section}>
+          <View style={styles.section}>
             <Heading3 style={styles.sectionTitle}>
-              Velocidad de {selectedGoal === 'lose_weight' ? 'Pérdida' : 'Ganancia'}
+              Velocidade de {selectedGoal === 'lose_weight' ? 'Perda' : 'Ganho'}
             </Heading3>
             <Caption color="textSecondary" style={styles.sectionDescription}>
-              Una velocidad más lenta es más sostenible y saludable
+              Uma velocidade mais lenta é mais sustentável e saudável
             </Caption>
             
             <View style={styles.ratesContainer}>
@@ -299,94 +310,58 @@ export const GoalsSetupScreen = () => {
                 </TouchableOpacity>
               ))}
             </View>
-          </Card>
+          </View>
         )}
 
         {/* Calculated Goals Preview */}
-        <Card style={styles.previewCard}>
-          <Heading3 style={styles.previewTitle}>Tus Objetivos Nutricionales</Heading3>
+        <View style={styles.previewCard}>
+          <Heading3 style={styles.previewTitle}>Seus objetivos nutricionais</Heading3>
           <Caption color="textSecondary" style={styles.previewDescription}>
-            Calculados científicamente basados en tu perfil y objetivos
+            Calculados com base no seu perfil e objetivos
           </Caption>
           
           <View style={styles.goalsGrid}>
-            <View style={styles.goalStat}>
+            <View style={[styles.goalStatCard, styles.caloriesCard]}>
+              <BodyText style={styles.goalStatEmoji}>🔥</BodyText>
               <BodyText style={styles.goalStatValue}>
                 {nutritionGoals.calories}
               </BodyText>
-              <Caption color="textSecondary">Calorías diarias</Caption>
+              <Caption color="textSecondary" style={styles.goalStatLabel}>Calorias</Caption>
             </View>
-            <View style={styles.goalStat}>
+            <View style={[styles.goalStatCard, styles.proteinCard]}>
+              <BodyText style={styles.goalStatEmoji}>🥩</BodyText>
               <BodyText style={styles.goalStatValue}>
                 {nutritionGoals.protein}g
               </BodyText>
-              <Caption color="textSecondary">Proteína</Caption>
+              <Caption color="textSecondary" style={styles.goalStatLabel}>Proteína</Caption>
             </View>
-            <View style={styles.goalStat}>
+            <View style={[styles.goalStatCard, styles.carbsCard]}>
+              <BodyText style={styles.goalStatEmoji}>🍞</BodyText>
               <BodyText style={styles.goalStatValue}>
                 {nutritionGoals.carbs}g
               </BodyText>
-              <Caption color="textSecondary">Carbohidratos</Caption>
+              <Caption color="textSecondary" style={styles.goalStatLabel}>Carbs</Caption>
             </View>
-            <View style={styles.goalStat}>
+            <View style={[styles.goalStatCard, styles.fatCard]}>
+              <BodyText style={styles.goalStatEmoji}>🥑</BodyText>
               <BodyText style={styles.goalStatValue}>
                 {nutritionGoals.fat}g
               </BodyText>
-              <Caption color="textSecondary">Grasas</Caption>
+              <Caption color="textSecondary" style={styles.goalStatLabel}>Gorduras</Caption>
             </View>
           </View>
+        </View>
+      </ScrollView>
 
-          <View style={styles.macroDistribution}>
-            <Caption color="textSecondary" style={styles.distributionTitle}>
-              Distribución de macronutrientes:
-            </Caption>
-            <View style={styles.macroBar}>
-              <View style={[styles.macroSegment, styles.proteinSegment, { 
-                flex: nutritionGoals.protein * 4 
-              }]} />
-              <View style={[styles.macroSegment, styles.carbSegment, { 
-                flex: nutritionGoals.carbs * 4 
-              }]} />
-              <View style={[styles.macroSegment, styles.fatSegment, { 
-                flex: nutritionGoals.fat * 9 
-              }]} />
-            </View>
-            <View style={styles.macroLabels}>
-              <Caption style={styles.proteinLabel}>
-                Proteína ({Math.round((nutritionGoals.protein * 4 / nutritionGoals.calories) * 100)}%)
-              </Caption>
-              <Caption style={styles.carbLabel}>
-                Carbos ({Math.round((nutritionGoals.carbs * 4 / nutritionGoals.calories) * 100)}%)
-              </Caption>
-              <Caption style={styles.fatLabel}>
-                Grasas ({Math.round((nutritionGoals.fat * 9 / nutritionGoals.calories) * 100)}%)
-              </Caption>
-            </View>
-          </View>
-        </Card>
-
-        {/* Info Note */}
-        <Card style={styles.infoCard}>
-          <View style={styles.infoContent}>
-            <BodyText style={styles.infoEmoji}>💡</BodyText>
-            <View style={styles.infoText}>
-              <BodyText style={styles.infoTitle}>Ajustes automáticos</BodyText>
-              <Caption color="textSecondary">
-                Estos objetivos se ajustarán automáticamente según tu progreso y podrás modificarlos en cualquier momento desde tu perfil.
-              </Caption>
-            </View>
-          </View>
-        </Card>
-
-        {/* Complete Button */}
+      {/* Complete Button - Fixed at bottom */}
+      <View style={styles.actionsContainer}>
         <Button
-          title="Completar Configuración"
+          title="Concluir configuração"
           onPress={handleComplete}
           size="large"
           fullWidth
-          style={styles.completeButton}
         />
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };
@@ -399,8 +374,9 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  content: {
-    padding: SPACING.lg,
+  scrollContent: {
+    padding: SPACING.xl,
+    paddingBottom: SPACING.xl,
   },
   header: {
     alignItems: 'center',
@@ -415,7 +391,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
   },
   section: {
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.xl,
   },
   sectionTitle: {
     marginBottom: SPACING.md,
@@ -436,7 +412,7 @@ const styles = StyleSheet.create({
   },
   goalOptionActive: {
     borderColor: COLORS.primary,
-    backgroundColor: COLORS.primary,
+    backgroundColor: '#E6F7F3',
   },
   goalHeader: {
     flexDirection: 'row',
@@ -456,19 +432,19 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   goalTitleActive: {
-    color: COLORS.surface,
+    color: COLORS.primary,
   },
   goalDescription: {
     fontSize: 14,
     color: COLORS.textSecondary,
   },
   goalDescriptionActive: {
-    color: COLORS.surface,
+    color: COLORS.textSecondary,
   },
   checkmark: {
-    color: COLORS.surface,
+    color: COLORS.primary,
     fontWeight: '700',
-    fontSize: 16,
+    fontSize: 18,
   },
   ratesContainer: {
     gap: SPACING.sm,
@@ -482,7 +458,7 @@ const styles = StyleSheet.create({
   },
   rateOptionActive: {
     borderColor: COLORS.primary,
-    backgroundColor: COLORS.primary,
+    backgroundColor: '#E6F7F3',
   },
   rateHeader: {
     flexDirection: 'row',
@@ -495,105 +471,93 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   rateTitleActive: {
-    color: COLORS.surface,
+    color: COLORS.primary,
   },
   rateDescription: {
     fontSize: 14,
     color: COLORS.textSecondary,
   },
   rateDescriptionActive: {
-    color: COLORS.surface,
+    color: COLORS.textSecondary,
   },
   previewCard: {
-    backgroundColor: COLORS.background,
-    borderWidth: 2,
-    borderColor: COLORS.primary,
-    marginBottom: SPACING.lg,
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: SPACING.lg,
+    marginBottom: SPACING.xl,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   previewTitle: {
     marginBottom: SPACING.xs,
-    color: COLORS.primary,
+    fontSize: 20,
+    fontWeight: '600',
   },
   previewDescription: {
     marginBottom: SPACING.lg,
   },
   goalsGrid: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: SPACING.lg,
+    flexWrap: 'wrap',
+    gap: SPACING.md,
+    justifyContent: 'space-between',
   },
-  goalStat: {
+  goalStatCard: {
+    flex: 1,
+    minWidth: '45%',
     alignItems: 'center',
-  },
-  goalStatValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.primary,
-    marginBottom: SPACING.xs,
-  },
-  macroDistribution: {
-    marginTop: SPACING.md,
-  },
-  distributionTitle: {
-    marginBottom: SPACING.sm,
-    textAlign: 'center',
-  },
-  macroBar: {
-    flexDirection: 'row',
-    height: 8,
-    borderRadius: 4,
-    overflow: 'hidden',
-    marginBottom: SPACING.sm,
-  },
-  macroSegment: {
-    height: '100%',
-  },
-  proteinSegment: {
-    backgroundColor: COLORS.primary,
-  },
-  carbSegment: {
-    backgroundColor: COLORS.secondary,
-  },
-  fatSegment: {
-    backgroundColor: COLORS.success,
-  },
-  macroLabels: {
-    gap: SPACING.xs,
-  },
-  proteinLabel: {
-    color: COLORS.primary,
-    fontWeight: '500',
-  },
-  carbLabel: {
-    color: COLORS.secondary,
-    fontWeight: '500',
-  },
-  fatLabel: {
-    color: COLORS.success,
-    fontWeight: '500',
-  },
-  infoCard: {
+    justifyContent: 'center',
+    padding: SPACING.md,
+    paddingTop: SPACING.lg,
+    borderRadius: 12,
     backgroundColor: COLORS.background,
     borderWidth: 1,
     borderColor: COLORS.border,
-    marginBottom: SPACING.lg,
+    minHeight: 120,
   },
-  infoContent: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: SPACING.md,
+  caloriesCard: {
+    borderLeftWidth: 3,
+    borderLeftColor: '#FF6B35',
   },
-  infoEmoji: {
-    fontSize: 20,
+  proteinCard: {
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.primary,
   },
-  infoText: {
-    flex: 1,
+  carbsCard: {
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.secondary,
   },
-  infoTitle: {
-    fontWeight: '600',
+  fatCard: {
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.success,
+  },
+  goalStatEmoji: {
+    fontSize: 32,
+    marginBottom: SPACING.xs,
+    lineHeight: 40,
+    textAlign: 'center',
+    minHeight: 40,
+  },
+  goalStatValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.text,
     marginBottom: SPACING.xs,
   },
-  completeButton: {
-    marginBottom: SPACING.xl,
+  goalStatLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  actionsContainer: {
+    padding: SPACING.xl,
+    paddingTop: SPACING.lg,
+    backgroundColor: COLORS.background,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
   },
 });

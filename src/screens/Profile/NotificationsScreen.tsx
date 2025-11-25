@@ -43,12 +43,12 @@ export const NotificationsScreen = () => {
             color={COLORS.text}
             onPress={() => navigation.goBack()}
           />
-          <Heading2 style={styles.screenTitle}>Notificaciones</Heading2>
+          <Heading2 style={styles.screenTitle}>Notificações</Heading2>
         </View>
 
         <Card style={styles.infoCard}>
           <BodyText color="textSecondary">
-            Configura recordatorios para mantenerte en el camino hacia tus objetivos.
+            Configure lembretes para se manter no caminho das suas metas.
           </BodyText>
         </Card>
 
@@ -58,10 +58,10 @@ export const NotificationsScreen = () => {
             <View style={styles.settingInfo}>
               <View style={styles.settingHeader}>
                 <MaterialIcons name="restaurant" size={24} color={COLORS.primary} />
-                <Heading3 style={styles.settingTitle}>Recordatorios de Comidas</Heading3>
+                <Heading3 style={styles.settingTitle}>Lembretes de refeições</Heading3>
               </View>
               <Caption color="textSecondary">
-                Recibe notificaciones para registrar tus comidas diarias
+                Receba notificações para registrar suas refeições diárias
               </Caption>
             </View>
             <Switch
@@ -79,10 +79,10 @@ export const NotificationsScreen = () => {
             <View style={styles.settingInfo}>
               <View style={styles.settingHeader}>
                 <MaterialIcons name="water-drop" size={24} color="#2196F3" />
-                <Heading3 style={styles.settingTitle}>Recordatorios de Agua</Heading3>
+                <Heading3 style={styles.settingTitle}>Lembretes de água</Heading3>
               </View>
               <Caption color="textSecondary">
-                Mantente hidratado con recordatorios cada 2 horas
+                Fique hidratado com lembretes a cada 2 horas
               </Caption>
             </View>
             <Switch
@@ -100,10 +100,10 @@ export const NotificationsScreen = () => {
             <View style={styles.settingInfo}>
               <View style={styles.settingHeader}>
                 <MaterialIcons name="emoji-events" size={24} color="#FFD700" />
-                <Heading3 style={styles.settingTitle}>Logros y Metas</Heading3>
+                <Heading3 style={styles.settingTitle}>Conquistas e metas</Heading3>
               </View>
               <Caption color="textSecondary">
-                Celebra cuando alcances tus objetivos diarios
+                Receba alertas quando atingir suas metas diárias
               </Caption>
             </View>
             <Switch
@@ -121,10 +121,10 @@ export const NotificationsScreen = () => {
             <View style={styles.settingInfo}>
               <View style={styles.settingHeader}>
                 <MaterialIcons name="insert-chart" size={24} color="#9C27B0" />
-                <Heading3 style={styles.settingTitle}>Reportes Semanales</Heading3>
+                <Heading3 style={styles.settingTitle}>Relatórios semanais</Heading3>
               </View>
               <Caption color="textSecondary">
-                Recibe un resumen de tu progreso cada semana
+                Receba um resumo do seu progresso toda semana
               </Caption>
             </View>
             <Switch
@@ -139,7 +139,7 @@ export const NotificationsScreen = () => {
         <Card style={styles.noteCard}>
           <MaterialIcons name="info-outline" size={20} color={COLORS.textSecondary} />
           <Caption color="textSecondary" style={styles.noteText}>
-            Las notificaciones requieren permisos del sistema. Puedes administrarlas en la configuración de tu dispositivo.
+            As notificações dependem das permissões do sistema. Gerencie-as nas configurações do seu dispositivo.
           </Caption>
         </Card>
       </ScrollView>

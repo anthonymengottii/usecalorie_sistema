@@ -7,10 +7,12 @@ import { Platform, NativeModules } from 'react-native';
 import { logger } from './logger';
 
 // Set up global error handler for native errors
-if (__DEV__) {
-  const originalHandler = global.ErrorUtils?.getGlobalHandler?.();
-  
-  global.ErrorUtils?.setGlobalHandler?.((error: Error, isFatal?: boolean) => {
+const globalErrorUtils = (globalThis as any)?.ErrorUtils;
+
+if (__DEV__ && globalErrorUtils) {
+  const originalHandler = globalErrorUtils.getGlobalHandler?.();
+
+  globalErrorUtils.setGlobalHandler?.((error: Error, isFatal?: boolean) => {
     const errorMessage = error?.message || String(error);
     
     if (errorMessage.includes('String cannot be cast to Boolean') || 

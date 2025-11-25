@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Card } from '../../components/UI/Card';
 import { Button } from '../../components/UI/Button';
 import { Heading1, Heading2, BodyText, Caption } from '../../components/UI/Typography';
 import { useNavigation } from '../../utils/navigation';
@@ -21,105 +20,90 @@ import { COLORS, SPACING } from '../../utils/constants';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-export const WelcomeScreen = () => {
+interface WelcomeScreenProps {
+  onNext?: () => void;
+}
+
+export const WelcomeScreen = ({ onNext }: WelcomeScreenProps = {}) => {
   const navigation = useNavigation();
   const handleGetStarted = () => {
-    console.log('🚀 Welcome Screen - Navigating to Features');
-    navigation.navigate('Features');
+    if (onNext) {
+      onNext();
+    } else {
+      console.log('🚀 Welcome Screen - Navigating to Features');
+      navigation.navigate('Features');
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView 
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={Boolean(false)}
       >
         {/* Hero Section */}
         <View style={styles.hero}>
           <View style={styles.logoContainer}>
-            <BodyText style={styles.logoEmoji}>🍎</BodyText>
             <Heading1 style={styles.appName}>CalorIA</Heading1>
           </View>
           
           <Heading2 style={styles.tagline}>
-            Tu nutricionista personal con inteligencia artificial
+            Seu nutricionista pessoal{'\n'}com inteligência artificial
           </Heading2>
           
           <BodyText align="center" color="textSecondary" style={styles.description}>
-            Escanea tu comida, trackea calorías automáticamente y alcanza tus objetivos de salud de forma inteligente.
+            Escaneie suas refeições, acompanhe calorias automaticamente e alcance suas metas de saúde de forma inteligente.
           </BodyText>
         </View>
 
-        {/* Feature Highlights */}
+        {/* Feature Highlights - Simplified */}
         <View style={styles.highlights}>
-          <Card style={styles.highlightCard}>
-            <View style={styles.highlightItem}>
-              <BodyText style={styles.highlightEmoji}>📸</BodyText>
-              <View style={styles.highlightText}>
-                <BodyText style={styles.highlightTitle}>Escaneo Inteligente</BodyText>
-                <Caption color="textSecondary">
-                  Solo toma una foto y la IA identifica tu comida automáticamente
-                </Caption>
-              </View>
-            </View>
-          </Card>
-
-          <Card style={styles.highlightCard}>
-            <View style={styles.highlightItem}>
-              <BodyText style={styles.highlightEmoji}>📊</BodyText>
-              <View style={styles.highlightText}>
-                <BodyText style={styles.highlightTitle}>Tracking Automático</BodyText>
-                <Caption color="textSecondary">
-                  Calorías, macros y micronutrientes calculados al instante
-                </Caption>
-              </View>
-            </View>
-          </Card>
-
-          <Card style={styles.highlightCard}>
-            <View style={styles.highlightItem}>
-              <BodyText style={styles.highlightEmoji}>🎯</BodyText>
-              <View style={styles.highlightText}>
-                <BodyText style={styles.highlightTitle}>Metas Personalizadas</BodyText>
-                <Caption color="textSecondary">
-                  Objetivos adaptados a tu estilo de vida y necesidades
-                </Caption>
-              </View>
-            </View>
-          </Card>
-        </View>
-
-        {/* Value Proposition */}
-        <Card style={styles.valueCard}>
-          <View style={styles.valueContent}>
-            <BodyText style={styles.valueEmoji}>💪</BodyText>
-            <View style={styles.valueText}>
-              <BodyText style={styles.valueTitle}>
-                Más accesible que la competencia
-              </BodyText>
-              <Caption color="textSecondary" style={styles.valueDescription}>
-                30 días gratis completos. Luego solo $1.50/mes vs $5/mes de otras apps.
+          <View style={styles.highlightItem}>
+            <BodyText style={styles.highlightEmoji}>📸</BodyText>
+            <View style={styles.highlightText}>
+              <BodyText style={styles.highlightTitle}>Escaneamento inteligente</BodyText>
+              <Caption color="textSecondary" style={styles.highlightDescription}>
+                Basta tirar uma foto e a IA identifica sua refeição automaticamente
               </Caption>
             </View>
           </View>
-        </Card>
 
-        {/* Action Button */}
-        <View style={styles.actions}>
-          <Button
-            title="Comenzar mi viaje"
-            onPress={handleGetStarted}
-            size="large"
-            fullWidth
-            style={styles.startButton}
-          />
-          
-          <Caption align="center" color="textSecondary" style={styles.disclaimer}>
-            30 días gratis. Sin compromisos. Cancela cuando quieras.
-          </Caption>
+          <View style={styles.highlightItem}>
+            <BodyText style={styles.highlightEmoji}>📊</BodyText>
+            <View style={styles.highlightText}>
+              <BodyText style={styles.highlightTitle}>Acompanhamento automático</BodyText>
+              <Caption color="textSecondary" style={styles.highlightDescription}>
+                Calorias, macros e micronutrientes calculados na hora
+              </Caption>
+            </View>
+          </View>
+
+          <View style={styles.highlightItem}>
+            <BodyText style={styles.highlightEmoji}>🎯</BodyText>
+            <View style={styles.highlightText}>
+              <BodyText style={styles.highlightTitle}>Metas personalizadas</BodyText>
+              <Caption color="textSecondary" style={styles.highlightDescription}>
+                Objetivos adaptados ao seu estilo de vida e necessidades
+              </Caption>
+            </View>
+          </View>
         </View>
       </ScrollView>
+
+      {/* Action Button - Fixed at bottom */}
+      <View style={styles.actionsContainer}>
+        <Button
+          title="Começar"
+          onPress={handleGetStarted}
+          size="large"
+          fullWidth
+        />
+        
+        <Caption align="center" color="textSecondary" style={styles.disclaimer}>
+          30 dias grátis • Sem compromisso
+        </Caption>
+      </View>
     </SafeAreaView>
   );
 };
@@ -132,26 +116,21 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  content: {
-    flexGrow: 1,
-    padding: SPACING.lg,
-    paddingBottom: SPACING.xl, // Extra space at bottom
+  scrollContent: {
+    padding: SPACING.xl,
+    paddingBottom: SPACING.xl,
   },
   hero: {
     alignItems: 'center',
     marginTop: SPACING.xl,
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.xl * 2,
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: SPACING.lg,
-  },
-  logoEmoji: {
-    fontSize: 64,
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.xl,
   },
   appName: {
-    fontSize: 36,
+    fontSize: 48,
     fontWeight: '700',
     color: COLORS.primary,
     marginBottom: SPACING.md,
@@ -159,29 +138,34 @@ const styles = StyleSheet.create({
   tagline: {
     textAlign: 'center',
     marginBottom: SPACING.md,
-    paddingHorizontal: SPACING.md,
-    lineHeight: 28,
+    fontSize: 26,
+    lineHeight: 34,
+    fontWeight: '600',
+    color: COLORS.text,
   },
   description: {
     textAlign: 'center',
-    paddingHorizontal: SPACING.md,
-    lineHeight: 22,
+    paddingHorizontal: SPACING.lg,
+    lineHeight: 24,
+    fontSize: 16,
+    color: COLORS.textSecondary,
   },
   highlights: {
-    gap: SPACING.md,
-    marginBottom: SPACING.lg,
-  },
-  highlightCard: {
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
+    gap: SPACING.xl,
+    marginBottom: SPACING.xl,
   },
   highlightItem: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: SPACING.md,
+    paddingVertical: SPACING.sm,
+    minHeight: 50,
   },
   highlightEmoji: {
-    fontSize: 28,
+    fontSize: 32,
+    lineHeight: 40,
+    width: 40,
+    textAlign: 'center',
   },
   highlightText: {
     flex: 1,
@@ -189,43 +173,23 @@ const styles = StyleSheet.create({
   highlightTitle: {
     fontWeight: '600',
     marginBottom: SPACING.xs,
+    fontSize: 17,
     color: COLORS.text,
   },
-  valueCard: {
-    backgroundColor: COLORS.primary,
-    marginBottom: SPACING.lg,
+  highlightDescription: {
+    fontSize: 15,
+    lineHeight: 22,
   },
-  valueContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.md,
-  },
-  valueEmoji: {
-    fontSize: 28,
-  },
-  valueText: {
-    flex: 1,
-  },
-  valueTitle: {
-    fontWeight: '600',
-    color: COLORS.surface,
-    marginBottom: SPACING.xs,
-  },
-  valueDescription: {
-    color: COLORS.surface,
-  },
-  actions: {
-    gap: SPACING.md,
-  },
-  startButton: {
-    elevation: 4,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+  actionsContainer: {
+    padding: SPACING.xl,
+    paddingTop: SPACING.lg,
+    backgroundColor: COLORS.background,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
   },
   disclaimer: {
     fontSize: 12,
+    marginTop: SPACING.md,
     paddingHorizontal: SPACING.md,
   },
 });

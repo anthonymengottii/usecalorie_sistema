@@ -9,7 +9,7 @@ export interface SubscriptionPlan {
   description: string;
   price: number;
   currency: string;
-  period: 'monthly' | 'annual';
+  period: 'monthly' | 'yearly';
   features: string[];
   popular?: boolean;
 }
@@ -53,33 +53,33 @@ class SubscriptionService {
       return [
         {
           id: 'monthly',
-          name: 'Mensual',
-          description: 'Acceso completo por un mes',
-          price: 1.50,
-          currency: 'USD',
+          name: 'Mensal',
+          description: 'Acesso completo por um mês',
+          price: 19.90,
+          currency: 'BRL',
           period: 'monthly',
           features: [
-            'Escaneo ilimitado de alimentos',
-            'Reconocimiento AI avanzado',
-            'Historial completo',
-            'Análisis nutricional detallado',
-            'Soporte prioritario',
+            'Escaneamento ilimitado de alimentos',
+            'Reconhecimento avançado por IA',
+            'Histórico completo',
+            'Análises nutricionais detalhadas',
+            'Suporte prioritário',
           ],
         },
         {
-          id: 'annual',
+          id: 'yearly',
           name: 'Anual',
-          description: 'Ahorra con el plan anual',
-          price: 10.00,
-          currency: 'USD',
-          period: 'annual',
+          description: 'Economize com o plano anual',
+          price: 199.00,
+          currency: 'BRL',
+          period: 'yearly',
           popular: true,
           features: [
-            'Todo del plan mensual',
-            'Ahorra 44%',
-            'Actualizaciones prioritarias',
-            'Funciones exclusivas',
-            'Soporte premium',
+            'Tudo do plano mensal',
+            'Economia de 44%',
+            'Atualizações prioritárias',
+            'Funcionalidades exclusivas',
+            'Suporte premium',
           ],
         },
       ];
@@ -128,7 +128,7 @@ class SubscriptionService {
       console.error('❌ Error purchasing plan:', error);
       return {
         success: false,
-        error: error.message || 'Error al procesar la compra',
+        error: error.message || 'Erro ao processar a compra',
       };
     }
   }
@@ -148,7 +148,7 @@ class SubscriptionService {
       console.error('❌ Error restoring purchases:', error);
       return {
         success: false,
-        error: error.message || 'Error al restaurar compras',
+        error: error.message || 'Erro ao restaurar compras',
       };
     }
   }
@@ -168,7 +168,7 @@ class SubscriptionService {
       console.error('❌ Error cancelling subscription:', error);
       return {
         success: false,
-        error: error.message || 'Error al cancelar la suscripción',
+        error: error.message || 'Erro ao cancelar a assinatura',
       };
     }
   }

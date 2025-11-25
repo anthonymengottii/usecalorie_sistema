@@ -41,7 +41,7 @@ export const SubscriptionScreen = () => {
       setStatus(subscriptionStatus);
     } catch (error) {
       console.error('❌ Error loading subscription data:', error);
-      Alert.alert('Error', 'No se pudieron cargar los planes de suscripción');
+      Alert.alert('Erro', 'Não foi possível carregar os planos de assinatura');
     } finally {
       setLoading(false);
     }
@@ -54,16 +54,16 @@ export const SubscriptionScreen = () => {
       
       if (result.success) {
         Alert.alert(
-          '¡Suscripción exitosa!', 
-          'Ya tienes acceso a todas las funciones premium de CalorIA',
+          'Assinatura concluída!', 
+          'Você agora tem acesso a todos os recursos premium do CalorIA',
           [{ text: 'Continuar', onPress: () => loadSubscriptionData() }]
         );
       } else {
-        Alert.alert('Error', result.error || 'No se pudo procesar la compra');
+        Alert.alert('Erro', result.error || 'Não foi possível concluir a compra');
       }
     } catch (error) {
       console.error('❌ Purchase error:', error);
-      Alert.alert('Error', 'Error al procesar la compra');
+      Alert.alert('Erro', 'Falha ao processar a compra');
     } finally {
       setPurchasing(false);
     }
@@ -75,39 +75,40 @@ export const SubscriptionScreen = () => {
       const result = await subscriptionService.restorePurchases();
       
       if (result.success) {
-        Alert.alert('Compras restauradas', 'Se han restaurado tus compras anteriores');
+        Alert.alert('Compras restauradas', 'Suas compras anteriores foram recuperadas');
         loadSubscriptionData();
       } else {
-        Alert.alert('Error', result.error || 'No se pudieron restaurar las compras');
+        Alert.alert('Erro', result.error || 'Não foi possível restaurar as compras');
       }
     } catch (error) {
       console.error('❌ Restore error:', error);
-      Alert.alert('Error', 'Error al restaurar compras');
+      Alert.alert('Erro', 'Falha ao restaurar compras');
     } finally {
       setPurchasing(false);
     }
   };
 
   const formatPrice = (price: number, currency: string, period: 'monthly' | 'yearly') => {
-    const periodText = period === 'monthly' ? '/mes' : '/año';
-    return `$${price.toFixed(2)} ${periodText}`;
+    const periodText = period === 'monthly' ? '/mês' : '/ano';
+    const formattedPrice = price.toFixed(2).replace('.', ',');
+    return `R$ ${formattedPrice} ${periodText}`;
   };
 
   const getTrialInfo = () => {
-    if (!status?.isInTrial || !status.trialEndDate) return null;
+    if (!status?.isTrial || !status.trialEndsAt) return null;
     
     const daysLeft = Math.max(0, Math.ceil(
-      (status.trialEndDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+      (status.trialEndsAt.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
     ));
     
-    return `${daysLeft} días restantes de prueba gratuita`;
+    return `${daysLeft} dias restantes de teste gratuito`;
   };
 
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <BodyText>Cargando planes...</BodyText>
+          <BodyText>Carregando planos...</BodyText>
         </View>
       </SafeAreaView>
     );
@@ -118,9 +119,9 @@ export const SubscriptionScreen = () => {
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <Heading1 style={styles.title}>Desbloquea CalorIA</Heading1>
+          <Heading1 style={styles.title}>Desbloqueie o CalorIA</Heading1>
           
-          {status?.isInTrial && (
+          {status?.isTrial && (
             <Card style={styles.trialCard}>
               <BodyText style={styles.trialText}>
                 🎉 {getTrialInfo()}
@@ -129,20 +130,20 @@ export const SubscriptionScreen = () => {
           )}
           
           <BodyText align="center" color="textSecondary" style={styles.subtitle}>
-            Accede a todas las funciones premium y transforma tu relación con la comida
+            Ten acesso a todos os recursos premium e transforme sua relação com a comida
           </BodyText>
         </View>
 
         {/* Pricing Comparison */}
         <Card style={styles.comparisonCard}>
           <Heading2 style={styles.comparisonTitle}>
-            💰 Más accesible que la competencia
+            💰 Mais acessível que a concorrência
           </Heading2>
           <BodyText style={styles.comparisonText}>
-            • <Text style={styles.bold}>Cal AI</Text>: $5/mes → CalorIA: $1.50/mes (70% menos)
+            • <Text style={styles.bold}>Cal AI</Text>: R$ 30/mês → CalorIA: R$ 19,90/mês (33% menos)
           </BodyText>
           <BodyText style={styles.comparisonText}>
-            • <Text style={styles.bold}>MyFitnessPal</Text>: $9.99/mes → CalorIA: $1.50/mes (85% menos)
+            • <Text style={styles.bold}>MyFitnessPal</Text>: R$ 50/mês → CalorIA: R$ 19,90/mês (60% menos)
           </BodyText>
         </Card>
 
@@ -153,12 +154,12 @@ export const SubscriptionScreen = () => {
               key={plan.id} 
               style={[
                 styles.planCard,
-                plan.isPopular && styles.popularPlan
+                plan.popular ? styles.popularPlan : undefined,
               ]}
             >
-              {plan.isPopular && (
+              {plan.popular && (
                 <View style={styles.popularBadge}>
-                  <Caption style={styles.popularText}>MÁS POPULAR</Caption>
+                  <Caption style={styles.popularText}>MAIS POPULAR</Caption>
                 </View>
               )}
               
@@ -179,19 +180,13 @@ export const SubscriptionScreen = () => {
                 ))}
               </View>
 
-              {plan.trialDays && (
-                <BodyText style={styles.trialInfo}>
-                  🎁 {plan.trialDays} días gratis, luego {plan.priceString}/{plan.period === 'monthly' ? 'mes' : 'año'}
-                </BodyText>
-              )}
-
               <Button
-                title={status?.isActive ? 'Plan Actual' : 'Comenzar Prueba Gratuita'}
+                title={status?.isActive ? 'Plano atual' : 'Iniciar teste gratuito'}
                 onPress={() => handlePurchase(plan.id)}
                 disabled={purchasing || status?.isActive}
                 style={[
                   styles.planButton,
-                  plan.isPopular && styles.popularButton
+                  plan.popular ? styles.popularButton : undefined,
                 ]}
               />
             </Card>
@@ -200,33 +195,33 @@ export const SubscriptionScreen = () => {
 
         {/* Features Grid */}
         <View style={styles.featuresGrid}>
-          <Heading2 style={styles.featuresTitle}>¿Qué incluye CalorIA Premium?</Heading2>
+          <Heading2 style={styles.featuresTitle}>O que inclui o CalorIA Premium?</Heading2>
           
           <View style={styles.featuresRow}>
             <Card style={styles.featureCard}>
               <BodyText style={styles.featureEmoji}>📸</BodyText>
-              <BodyText style={styles.featureCardTitle}>Escaneo Ilimitado</BodyText>
-              <Caption>Reconoce cualquier alimento con IA</Caption>
+              <BodyText style={styles.featureCardTitle}>Escaneamento ilimitado</BodyText>
+              <Caption>Reconheça qualquer alimento com IA</Caption>
             </Card>
             
             <Card style={styles.featureCard}>
               <BodyText style={styles.featureEmoji}>📊</BodyText>
-              <BodyText style={styles.featureCardTitle}>Análisis Avanzado</BodyText>
-              <Caption>Reportes nutricionales detallados</Caption>
+              <BodyText style={styles.featureCardTitle}>Análises avançadas</BodyText>
+              <Caption>Relatórios nutricionais detalhados</Caption>
             </Card>
           </View>
 
           <View style={styles.featuresRow}>
             <Card style={styles.featureCard}>
               <BodyText style={styles.featureEmoji}>☁️</BodyText>
-              <BodyText style={styles.featureCardTitle}>Sync en la Nube</BodyText>
-              <Caption>Tus datos seguros y sincronizados</Caption>
+              <BodyText style={styles.featureCardTitle}>Sincronização na nuvem</BodyText>
+              <Caption>Seus dados seguros e sincronizados</Caption>
             </Card>
             
             <Card style={styles.featureCard}>
               <BodyText style={styles.featureEmoji}>🎯</BodyText>
-              <BodyText style={styles.featureCardTitle}>Metas Personalizadas</BodyText>
-              <Caption>Objetivos adaptados a ti</Caption>
+              <BodyText style={styles.featureCardTitle}>Metas personalizadas</BodyText>
+              <Caption>Objetivos adaptados a você</Caption>
             </Card>
           </View>
         </View>
@@ -234,7 +229,7 @@ export const SubscriptionScreen = () => {
         {/* Footer Actions */}
         <View style={styles.footer}>
           <Button
-            title="Restaurar Compras"
+            title="Restaurar compras"
             onPress={handleRestorePurchases}
             disabled={purchasing}
             variant="secondary"
@@ -242,9 +237,9 @@ export const SubscriptionScreen = () => {
           />
           
           <Caption align="center" color="textSecondary" style={styles.disclaimer}>
-            • Cancela cuando quieras desde la App Store{'\n'}
-            • No se realizan cargos durante el período de prueba{'\n'}
-            • Términos y condiciones aplicables
+            • Cancele quando quiser pela loja de apps{'\n'}
+            • Nenhuma cobrança durante o período de teste{'\n'}
+            • Sujeito a termos e condições
           </Caption>
         </View>
       </ScrollView>

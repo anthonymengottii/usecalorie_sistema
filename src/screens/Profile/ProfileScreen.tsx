@@ -4,7 +4,7 @@
  * User profile management and app settings
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -20,13 +20,10 @@ import { useNavigation } from '../../utils/navigation';
 import { MaterialIcons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 
-import { Card } from '../../components/UI/Card';
 import { Button } from '../../components/UI/Button';
 import { Heading2, Heading3, BodyText, Caption } from '../../components/UI/Typography';
 import { useUserStore } from '../../store/userStore';
 import { firebaseService } from '../../services/FirebaseService';
-import { StorageService } from '../../services/StorageServiceFallback';
-import { IS_DEVELOPMENT } from '../../../config/environment';
 import { COLORS, SPACING } from '../../utils/constants';
 
 export const ProfileScreen = () => {
@@ -35,6 +32,44 @@ export const ProfileScreen = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(user?.displayName || '');
   const [lastSyncText, setLastSyncText] = useState('Calculando...');
+
+  const subscriptionInfo = useMemo(() => {
+    const subscription = user?.subscription;
+
+    const formatDate = (date?: Date) => {
+      if (!date) return '';
+      const parsed = date instanceof Date ? date : new Date(date);
+      return parsed.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+    };
+
+    if (!subscription) {
+      return {
+        label: 'Plano gratuito',
+        detail: 'Faça upgrade na aba Assinaturas quando desejar.',
+      };
+    }
+
+    const label =
+      subscription.plan === 'annual'
+        ? 'Plano anual'
+        : 'Plano mensal';
+
+    let detail = '';
+    if (subscription.status === 'trial') {
+      detail = `Período de teste até ${formatDate(subscription.trialEndsAt)}`;
+    } else if (subscription.status === 'active') {
+      detail = 'Assinatura ativa';
+    } else if (subscription.status === 'expired') {
+      detail = 'Plano expirado - renove para continuar usando recursos premium';
+    } else if (subscription.status === 'cancelled') {
+      detail = 'Assinatura cancelada';
+    }
+
+    return {
+      label,
+      detail,
+    };
+  }, [user?.subscription]);
 
   // Get app version from Constants
   const appVersion = Constants.expoConfig?.version || '1.0.0';
@@ -45,7 +80,7 @@ export const ProfileScreen = () => {
       const lastActivity = user?.stats?.lastActivityDate;
 
       if (!lastActivity) {
-        setLastSyncText('Sin actividad');
+        setLastSyncText('Sem atividade');
         return;
       }
 
@@ -57,13 +92,13 @@ export const ProfileScreen = () => {
       const diffDays = Math.floor(diffHours / 24);
 
       if (diffMinutes < 1) {
-        setLastSyncText('Ahora mismo');
+        setLastSyncText('Agora mesmo');
       } else if (diffMinutes < 60) {
-        setLastSyncText(`Hace ${diffMinutes} ${diffMinutes === 1 ? 'minuto' : 'minutos'}`);
+        setLastSyncText(`Há ${diffMinutes} ${diffMinutes === 1 ? 'minuto' : 'minutos'}`);
       } else if (diffHours < 24) {
-        setLastSyncText(`Hace ${diffHours} ${diffHours === 1 ? 'hora' : 'horas'}`);
+        setLastSyncText(`Há ${diffHours} ${diffHours === 1 ? 'hora' : 'horas'}`);
       } else {
-        setLastSyncText(`Hace ${diffDays} ${diffDays === 1 ? 'día' : 'días'}`);
+        setLastSyncText(`Há ${diffDays} ${diffDays === 1 ? 'dia' : 'dias'}`);
       }
     };
 
@@ -83,7 +118,7 @@ export const ProfileScreen = () => {
 
   const handleSaveName = async () => {
     if (!user || !editedName.trim()) {
-      Alert.alert('Error', 'El nombre no puede estar vacío');
+      Alert.alert('Erro', 'O nome não pode ficar em branco');
       return;
     }
 
@@ -95,10 +130,10 @@ export const ProfileScreen = () => {
       await updateUser({ displayName: editedName.trim() });
 
       setIsEditingName(false);
-      Alert.alert('Éxito', 'Nombre actualizado correctamente');
+      Alert.alert('Sucesso', 'Nome atualizado com sucesso');
     } catch (error) {
       console.error('Error updating profile:', error);
-      Alert.alert('Error', 'No se pudo actualizar el perfil');
+      Alert.alert('Erro', 'Não foi possível atualizar o perfil');
     }
   };
 
@@ -125,15 +160,15 @@ export const ProfileScreen = () => {
 
   const handleLogout = () => {
     Alert.alert(
-      'Cerrar Sesión',
-      '¿Estás seguro que quieres cerrar sesión?',
+      'Sair da conta',
+      'Tem certeza de que deseja sair?',
       [
         {
           text: 'Cancelar',
           style: 'cancel',
         },
         {
-          text: 'Cerrar Sesión',
+          text: 'Sair',
           style: 'destructive',
           onPress: logout,
         },
@@ -154,7 +189,7 @@ export const ProfileScreen = () => {
         </View>
 
         {/* User Info */}
-        <Card style={styles.userCard}>
+        <View style={styles.userCard}>
           <View style={styles.userHeader}>
               <View style={styles.avatar}>
                 <BodyText style={styles.avatarText}>
@@ -168,7 +203,7 @@ export const ProfileScreen = () => {
                       style={styles.nameInput}
                       value={editedName}
                       onChangeText={setEditedName}
-                      placeholder="Ingresa tu nombre"
+                      placeholder="Digite seu nome"
                       autoFocus={true}
                       maxLength={50}
                     />
@@ -182,26 +217,29 @@ export const ProfileScreen = () => {
                     </View>
                   </View>
                 ) : (
-                  <Heading3>{user?.displayName || 'Usuario'}</Heading3>
+                  <Heading3>{user?.displayName || 'Usuário'}</Heading3>
                 )}
                 <Caption color="textSecondary">{user?.email}</Caption>
-                <Caption color="primary">Plan Premium - 25 días restantes</Caption>
+                <Caption color="primary">{subscriptionInfo.label}</Caption>
+                {subscriptionInfo.detail ? (
+                  <Caption color="textSecondary">{subscriptionInfo.detail}</Caption>
+                ) : null}
               </View>
             </View>
             {!isEditingName && (
               <Button
-                title="Editar Perfil"
+                title="Editar perfil"
                 onPress={handleEditProfile}
                 variant="outline"
                 size="small"
                 style={styles.editButton}
               />
             )}
-        </Card>
+        </View>
 
         {/* Quick Stats */}
-        <Card style={styles.statsCard}>
-          <Heading3 style={styles.statsTitle}>Estadísticas</Heading3>
+        <View style={styles.statsCard}>
+          <Heading3 style={styles.statsTitle}>Estatísticas</Heading3>
             <View style={styles.statsGrid}>
               <View style={styles.statItem}>
                 <View style={styles.statValueRow}>
@@ -210,7 +248,7 @@ export const ProfileScreen = () => {
                   </BodyText>
                   <MaterialIcons name="local-fire-department" size={20} color={COLORS.secondary} />
                 </View>
-                <Caption color="textSecondary">Racha actual</Caption>
+                <Caption color="textSecondary">Sequência atual</Caption>
               </View>
               <View style={styles.statItem}>
                 <View style={styles.statValueRow}>
@@ -219,7 +257,7 @@ export const ProfileScreen = () => {
                   </BodyText>
                   <MaterialIcons name="restaurant" size={20} color={COLORS.primary} />
                 </View>
-                <Caption color="textSecondary">Comidas registradas</Caption>
+                <Caption color="textSecondary">Refeições registradas</Caption>
               </View>
               <View style={styles.statItem}>
                 <View style={styles.statValueRow}>
@@ -230,7 +268,7 @@ export const ProfileScreen = () => {
                   </BodyText>
                   <MaterialIcons name="flag" size={20} color="#FF6B35" />
                 </View>
-                <Caption color="textSecondary">Por alcanzar</Caption>
+                <Caption color="textSecondary">Para atingir</Caption>
               </View>
               <View style={styles.statItem}>
                 <View style={styles.statValueRow}>
@@ -239,7 +277,7 @@ export const ProfileScreen = () => {
                   </BodyText>
                   <MaterialIcons name="calendar-today" size={20} color={COLORS.success} />
                 </View>
-                <Caption color="textSecondary">Días rastreados</Caption>
+                <Caption color="textSecondary">Dias acompanhados</Caption>
               </View>
               <View style={styles.statItem}>
                 <View style={styles.statValueRow}>
@@ -248,7 +286,7 @@ export const ProfileScreen = () => {
                   </BodyText>
                   <MaterialIcons name="emoji-events" size={20} color={COLORS.primary} />
                 </View>
-                <Caption color="textSecondary">Mejor racha</Caption>
+                <Caption color="textSecondary">Melhor sequência</Caption>
               </View>
               <View style={styles.statItem}>
                 <View style={styles.statValueRow}>
@@ -259,14 +297,14 @@ export const ProfileScreen = () => {
                   </BodyText>
                   <MaterialIcons name="trending-up" size={20} color="#9C27B0" />
                 </View>
-                <Caption color="textSecondary">Prom. calorías/día</Caption>
+                <Caption color="textSecondary">Média calorias/dia</Caption>
               </View>
             </View>
-        </Card>
+        </View>
 
-        {/* Achievements/Logros */}
-        <Card style={styles.achievementsCard}>
-          <Heading3 style={styles.achievementsTitle}>Logros Desbloqueados</Heading3>
+        {/* Conquistas */}
+        <View style={styles.achievementsCard}>
+          <Heading3 style={styles.achievementsTitle}>Conquistas desbloqueadas</Heading3>
             <View style={styles.achievementsGrid}>
               {/* Primera comida registrada */}
               <View style={[styles.achievementBadge, (user?.stats?.totalMealsLogged || 0) >= 1 && styles.achievementUnlocked]}>
@@ -275,17 +313,17 @@ export const ProfileScreen = () => {
                   size={32}
                   color={(user?.stats?.totalMealsLogged || 0) >= 1 ? COLORS.primary : COLORS.border}
                 />
-                <Caption style={styles.achievementLabel}>Primera comida</Caption>
+                <Caption style={styles.achievementLabel}>Primeira refeição</Caption>
               </View>
 
-              {/* Racha de 3 días */}
+              {/* Sequência de 3 dias */}
               <View style={[styles.achievementBadge, (user?.stats?.currentStreak || 0) >= 3 && styles.achievementUnlocked]}>
                 <MaterialIcons
                   name="whatshot"
                   size={32}
                   color={(user?.stats?.currentStreak || 0) >= 3 ? COLORS.secondary : COLORS.border}
                 />
-                <Caption style={styles.achievementLabel}>Racha 3 días</Caption>
+                <Caption style={styles.achievementLabel}>Sequência de 3 dias</Caption>
               </View>
 
               {/* 10 comidas registradas */}
@@ -295,32 +333,32 @@ export const ProfileScreen = () => {
                   size={32}
                   color={(user?.stats?.totalMealsLogged || 0) >= 10 ? '#FFD700' : COLORS.border}
                 />
-                <Caption style={styles.achievementLabel}>10 comidas</Caption>
+                <Caption style={styles.achievementLabel}>10 refeições</Caption>
               </View>
 
-              {/* Racha de 7 días */}
+              {/* Sequência de 7 dias */}
               <View style={[styles.achievementBadge, (user?.stats?.currentStreak || 0) >= 7 && styles.achievementUnlocked]}>
                 <MaterialIcons
                   name="local-fire-department"
                   size={32}
                   color={(user?.stats?.currentStreak || 0) >= 7 ? '#FF4500' : COLORS.border}
                 />
-                <Caption style={styles.achievementLabel}>Semana perfecta</Caption>
+                <Caption style={styles.achievementLabel}>Semana perfeita</Caption>
               </View>
             </View>
-        </Card>
+        </View>
 
         {/* Nutrition Goals */}
         {user?.profile && (
-          <Card style={styles.goalsCard}>
-            <Heading3 style={styles.goalsTitle}>Tu Perfil Nutricional</Heading3>
+          <View style={styles.goalsCard}>
+            <Heading3 style={styles.goalsTitle}>Seu perfil nutricional</Heading3>
               <View style={styles.goalsGrid}>
                 <View style={styles.goalRow}>
-                  <Caption color="textSecondary">Peso Actual</Caption>
+                  <Caption color="textSecondary">Peso atual</Caption>
                   <BodyText style={styles.goalValue}>{user.profile.weight} kg</BodyText>
                 </View>
                 <View style={styles.goalRow}>
-                  <Caption color="textSecondary">Peso Objetivo</Caption>
+                  <Caption color="textSecondary">Peso objetivo</Caption>
                   <BodyText style={styles.goalValue}>{user.profile.targetWeight} kg</BodyText>
                 </View>
                 <View style={styles.goalRow}>
@@ -343,14 +381,14 @@ export const ProfileScreen = () => {
 
               <View style={styles.macroGoalsSection}>
                 <Caption color="textSecondary" style={styles.macroGoalsTitle}>
-                  Objetivos Diarios
+                  Metas diárias
                 </Caption>
                 <View style={styles.macroGoalsRow}>
                   <View style={styles.macroGoalItem}>
                     <BodyText style={styles.macroGoalValue}>
                       {user.profile.goals.calories}
                     </BodyText>
-                    <Caption color="textSecondary">Calorías</Caption>
+                    <Caption color="textSecondary">Calorias</Caption>
                   </View>
                   <View style={styles.macroGoalItem}>
                     <BodyText style={styles.macroGoalValue}>
@@ -362,26 +400,26 @@ export const ProfileScreen = () => {
                     <BodyText style={styles.macroGoalValue}>
                       {user.profile.goals.carbs}g
                     </BodyText>
-                    <Caption color="textSecondary">Carbos</Caption>
+                    <Caption color="textSecondary">Carboidratos</Caption>
                   </View>
                   <View style={styles.macroGoalItem}>
                     <BodyText style={styles.macroGoalValue}>
                       {user.profile.goals.fat}g
                     </BodyText>
-                    <Caption color="textSecondary">Grasas</Caption>
+                    <Caption color="textSecondary">Gorduras</Caption>
                   </View>
                 </View>
               </View>
-          </Card>
+          </View>
         )}
 
         {/* Settings Menu */}
-        <Card style={styles.menuCard}>
-          <Heading3 style={styles.menuTitle}>Configuración</Heading3>
+        <View style={styles.menuCard}>
+          <Heading3 style={styles.menuTitle}>Configurações</Heading3>
           
           <View style={styles.menuItems}>
             <Button
-              title="Metas Nutricionales"
+              title="Metas nutricionais"
               onPress={handleNutritionGoals}
               variant="ghost"
               style={styles.menuItem}
@@ -389,7 +427,7 @@ export const ProfileScreen = () => {
             />
 
             <Button
-              title="Notificaciones"
+              title="Notificações"
               onPress={handleNotifications}
               variant="ghost"
               style={styles.menuItem}
@@ -397,7 +435,7 @@ export const ProfileScreen = () => {
             />
 
             <Button
-              title="Suscripción"
+              title="Assinatura"
               onPress={handleSubscription}
               variant="ghost"
               style={styles.menuItem}
@@ -405,33 +443,33 @@ export const ProfileScreen = () => {
             />
             
             <Button
-              title="Soporte"
+              title="Suporte"
               onPress={handleSupport}
               variant="ghost"
               style={styles.menuItem}
               icon={<MaterialIcons name="help-outline" size={20} color={COLORS.primary} />}
             />
           </View>
-        </Card>
+        </View>
 
         {/* App Info */}
-        <Card style={styles.infoCard}>
-          <Heading3 style={styles.infoTitle}>Información</Heading3>
+        <View style={styles.infoCard}>
+          <Heading3 style={styles.infoTitle}>Informações</Heading3>
           <View style={styles.infoItems}>
             <View style={styles.infoItem}>
-              <Caption color="textSecondary">Versión</Caption>
+              <Caption color="textSecondary">Versão</Caption>
               <Caption>{appVersion}</Caption>
             </View>
             <View style={styles.infoItem}>
-              <Caption color="textSecondary">Última sincronización</Caption>
+              <Caption color="textSecondary">Última sincronização</Caption>
               <Caption>{lastSyncText}</Caption>
             </View>
           </View>
-        </Card>
+        </View>
 
         {/* Logout */}
         <Button
-          title="Cerrar Sesión"
+          title="Sair da conta"
           onPress={handleLogout}
           variant="outline"
           style={[styles.logoutButton, { borderColor: COLORS.error }] as any}
@@ -452,16 +490,24 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: SPACING.md,
+    padding: SPACING.lg,
+    paddingTop: SPACING.xl,
   },
   header: {
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   screenTitle: {
+    fontSize: 28,
+    fontWeight: '700',
     textAlign: 'left',
   },
   userCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.lg,
     marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   userHeader: {
     flexDirection: 'row',
@@ -489,10 +535,18 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   statsCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.lg,
     marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   statsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     marginBottom: SPACING.md,
+    color: COLORS.text,
   },
   statsGrid: {
     flexDirection: 'row',
@@ -517,10 +571,18 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
   },
   achievementsCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.lg,
     marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   achievementsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     marginBottom: SPACING.md,
+    color: COLORS.text,
   },
   achievementsGrid: {
     flexDirection: 'row',
@@ -549,10 +611,18 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   goalsCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.lg,
     marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   goalsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     marginBottom: SPACING.md,
+    color: COLORS.text,
   },
   goalsGrid: {
     gap: SPACING.sm,
@@ -594,10 +664,18 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xs,
   },
   menuCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.lg,
     marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   menuTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     marginBottom: SPACING.md,
+    color: COLORS.text,
   },
   menuItems: {
     gap: SPACING.xs,
@@ -607,10 +685,18 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
   },
   infoCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.lg,
     marginBottom: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   infoTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     marginBottom: SPACING.md,
+    color: COLORS.text,
   },
   infoItems: {
     gap: SPACING.sm,

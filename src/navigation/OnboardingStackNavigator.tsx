@@ -49,7 +49,6 @@ export const OnboardingStackNavigator = () => {
         headerTitleStyle: {
           fontWeight: '600',
         },
-        headerBackTitleVisible: Boolean(false),
         gestureEnabled: Boolean(false), // Prevent swiping back during onboarding
       }}
     >
@@ -64,7 +63,7 @@ export const OnboardingStackNavigator = () => {
         name="Features" 
         component={FeaturesScreen}
         options={{
-          title: 'Descubre CalorIA',
+          title: 'Conheça o CalorIA',
           headerShown: Boolean(false),
         }}
       />
@@ -72,14 +71,14 @@ export const OnboardingStackNavigator = () => {
         name="ProfileSetup" 
         component={ProfileSetupScreen}
         options={{
-          title: 'Tu Perfil',
+          title: 'Seu perfil',
         }}
       />
       <Stack.Screen 
         name="GoalsSetup" 
         component={GoalsSetupScreen}
         options={{
-          title: 'Tus Objetivos',
+          title: 'Suas metas',
         }}
       />
       <Stack.Screen 

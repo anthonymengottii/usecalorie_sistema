@@ -26,15 +26,15 @@ export const SupportScreen = () => {
   const navigation = useNavigation();
 
   const handleEmail = () => {
-    Linking.openURL('mailto:soporte@caloria.app?subject=Soporte CalorIA');
+    Linking.openURL('mailto:suporte@caloria.app?subject=Suporte CalorIA');
   };
 
   const handleFAQ = () => {
-    Alert.alert('Próximamente', 'El centro de ayuda estará disponible pronto');
+    Alert.alert('Em breve', 'O centro de ajuda estará disponível em breve');
   };
 
   const handleChat = () => {
-    Alert.alert('Próximamente', 'El chat en vivo estará disponible pronto');
+    Alert.alert('Em breve', 'O chat ao vivo estará disponível em breve');
   };
 
   return (
@@ -52,23 +52,23 @@ export const SupportScreen = () => {
             color={COLORS.text}
             onPress={() => navigation.goBack()}
           />
-          <Heading2 style={styles.screenTitle}>Soporte</Heading2>
+          <Heading2 style={styles.screenTitle}>Suporte</Heading2>
         </View>
 
         <Card style={styles.welcomeCard}>
           <MaterialIcons name="support-agent" size={48} color={COLORS.primary} style={styles.welcomeIcon} />
-          <Heading3 style={styles.welcomeTitle}>¿Cómo podemos ayudarte?</Heading3>
+          <Heading3 style={styles.welcomeTitle}>Como podemos ajudar?</Heading3>
           <BodyText color="textSecondary" style={styles.welcomeText}>
-            Estamos aquí para resolver tus dudas y mejorar tu experiencia con CalorIA.
+            Estamos aqui para tirar suas dúvidas e melhorar sua experiência com o CalorIA.
           </BodyText>
         </Card>
 
         {/* Contact Methods */}
         <Card style={styles.contactCard}>
-          <Heading3 style={styles.sectionTitle}>Métodos de Contacto</Heading3>
+          <Heading3 style={styles.sectionTitle}>Canais de contato</Heading3>
 
           <Button
-            title="Enviar Email"
+            title="Enviar e-mail"
             onPress={handleEmail}
             variant="outline"
             fullWidth
@@ -77,7 +77,7 @@ export const SupportScreen = () => {
           />
 
           <Button
-            title="Chat en Vivo"
+            title="Chat ao vivo"
             onPress={handleChat}
             variant="outline"
             fullWidth
@@ -86,7 +86,7 @@ export const SupportScreen = () => {
           />
 
           <Button
-            title="Centro de Ayuda"
+            title="Central de ajuda"
             onPress={handleFAQ}
             variant="outline"
             fullWidth
@@ -97,34 +97,34 @@ export const SupportScreen = () => {
 
         {/* FAQ Preview */}
         <Card style={styles.faqCard}>
-          <Heading3 style={styles.sectionTitle}>Preguntas Frecuentes</Heading3>
+          <Heading3 style={styles.sectionTitle}>Perguntas frequentes</Heading3>
 
           <View style={styles.faqItem}>
             <MaterialIcons name="chevron-right" size={20} color={COLORS.textSecondary} />
             <View style={styles.faqContent}>
-              <BodyText style={styles.faqQuestion}>¿Cómo funciona el reconocimiento de alimentos?</BodyText>
-              <Caption color="textSecondary">Usamos IA avanzada para identificar automáticamente...</Caption>
+              <BodyText style={styles.faqQuestion}>Como funciona o reconhecimento de alimentos?</BodyText>
+              <Caption color="textSecondary">Usamos IA avançada para identificar automaticamente...</Caption>
             </View>
           </View>
 
           <View style={styles.faqItem}>
             <MaterialIcons name="chevron-right" size={20} color={COLORS.textSecondary} />
             <View style={styles.faqContent}>
-              <BodyText style={styles.faqQuestion}>¿Puedo cancelar mi suscripción?</BodyText>
-              <Caption color="textSecondary">Sí, puedes cancelar en cualquier momento desde...</Caption>
+              <BodyText style={styles.faqQuestion}>Posso cancelar minha assinatura?</BodyText>
+              <Caption color="textSecondary">Sim, você pode cancelar a qualquer momento diretamente...</Caption>
             </View>
           </View>
 
           <View style={styles.faqItem}>
             <MaterialIcons name="chevron-right" size={20} color={COLORS.textSecondary} />
             <View style={styles.faqContent}>
-              <BodyText style={styles.faqQuestion}>¿Cómo se calculan mis objetivos nutricionales?</BodyText>
-              <Caption color="textSecondary">Basamos los cálculos en tu perfil, edad, peso...</Caption>
+              <BodyText style={styles.faqQuestion}>Como são calculadas minhas metas nutricionais?</BodyText>
+              <Caption color="textSecondary">Baseamos os cálculos no seu perfil, idade, peso...</Caption>
             </View>
           </View>
 
           <Button
-            title="Ver Todas las Preguntas"
+            title="Ver todas as perguntas"
             onPress={handleFAQ}
             variant="ghost"
             style={styles.viewAllButton}
@@ -135,26 +135,26 @@ export const SupportScreen = () => {
         <Card style={styles.responseCard}>
           <View style={styles.responseHeader}>
             <MaterialIcons name="schedule" size={24} color={COLORS.primary} />
-            <Heading3 style={styles.responseTitle}>Tiempo de Respuesta</Heading3>
+            <Heading3 style={styles.responseTitle}>Tempo de resposta</Heading3>
           </View>
           <View style={styles.responseDetails}>
             <View style={styles.responseItem}>
-              <Caption color="textSecondary">Email</Caption>
+              <Caption color="textSecondary">E-mail</Caption>
               <BodyText style={styles.responseTime}>24-48 horas</BodyText>
             </View>
             <View style={styles.responseItem}>
               <Caption color="textSecondary">Chat</Caption>
-              <BodyText style={styles.responseTime}>Inmediato</BodyText>
+              <BodyText style={styles.responseTime}>Imediato</BodyText>
             </View>
           </View>
         </Card>
 
         {/* App Info */}
         <Card style={styles.infoCard}>
-          <Heading3 style={styles.sectionTitle}>Información de la App</Heading3>
+          <Heading3 style={styles.sectionTitle}>Informações do app</Heading3>
           <View style={styles.infoDetails}>
             <View style={styles.infoRow}>
-              <Caption color="textSecondary">Versión</Caption>
+              <Caption color="textSecondary">Versão</Caption>
               <Caption>1.0.0</Caption>
             </View>
             <View style={styles.infoRow}>
@@ -162,8 +162,8 @@ export const SupportScreen = () => {
               <Caption>2025.10.14</Caption>
             </View>
             <View style={styles.infoRow}>
-              <Caption color="textSecondary">Email de soporte</Caption>
-              <Caption>soporte@caloria.app</Caption>
+              <Caption color="textSecondary">E-mail de suporte</Caption>
+              <Caption>suporte@caloria.app</Caption>
             </View>
           </View>
         </Card>

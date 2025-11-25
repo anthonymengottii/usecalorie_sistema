@@ -4,9 +4,11 @@
  */
 
 import { FirestoreService, StorageService as FirebaseStorageService } from './firebase';
-import type { User, UserProfile, UserStats } from '../types';
+import type { UserProfile, UserStats, User, FoodEntry } from '../types';
 
 class FirebaseService {
+  private waterIntakeStore = new Map<string, number>();
+
   /**
    * Get user data from Firestore
    */
@@ -16,11 +18,11 @@ class FirebaseService {
     stats?: UserStats;
   }> {
     try {
-      const profile = await FirestoreService.getUserProfile(userId);
+      const profileData = await FirestoreService.getUserProfile(userId);
       return {
-        profile: profile || undefined,
-        onboardingCompleted: profile?.onboardingCompleted || false,
-        stats: profile?.stats || undefined,
+        profile: profileData ? (profileData as UserProfile) : undefined,
+        onboardingCompleted: profileData?.onboardingCompleted || false,
+        stats: profileData?.stats || undefined,
       };
     } catch (error) {
       console.error('❌ Error getting user data:', error);
@@ -41,6 +43,21 @@ class FirebaseService {
   }
 
   /**
+   * Update top-level user fields
+   */
+  async updateUserProfile(userId: string, updates: Partial<Pick<User, 'displayName' | 'photoURL'>>): Promise<void> {
+    try {
+      // Update in LocalAuthRepository
+      const { LocalAuthRepository } = await import('./LocalAuthRepository');
+      await LocalAuthRepository.updateUser(userId, updates);
+      console.log('✅ Updated user profile:', { userId, updates });
+    } catch (error) {
+      console.error('❌ Error updating user profile:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Upload image to Firebase Storage
    */
   async uploadImage(userId: string, imageUri: string, path: string): Promise<string> {
@@ -55,10 +72,12 @@ class FirebaseService {
   /**
    * Save food entry to Firestore
    */
-  async saveFoodEntry(userId: string, entry: any): Promise<void> {
+  async saveFoodEntry(userId: string, entry: Omit<FoodEntry, 'id'>): Promise<string> {
     try {
       // Demo: Just log it
       console.log('Demo: Saving food entry', { userId, entry });
+      const entryId = `entry_${Date.now()}`;
+      return entryId;
     } catch (error) {
       console.error('❌ Error saving food entry:', error);
       throw error;
@@ -68,7 +87,7 @@ class FirebaseService {
   /**
    * Get food entries from Firestore
    */
-  async getFoodEntries(userId: string, date?: Date): Promise<any[]> {
+  async getFoodEntries(userId: string, date?: Date): Promise<FoodEntry[]> {
     try {
       // Demo: Return empty array
       console.log('Demo: Getting food entries', { userId, date });
@@ -77,6 +96,32 @@ class FirebaseService {
       console.error('❌ Error getting food entries:', error);
       return [];
     }
+  }
+
+  /**
+   * Save user stats to Firestore
+   */
+  async saveUserStats(userId: string, stats: UserStats): Promise<void> {
+    try {
+      // Demo: Just log it
+      console.log('Demo: Saving user stats', { userId, stats });
+    } catch (error) {
+      console.error('❌ Error saving user stats:', error);
+      throw error;
+    }
+  }
+
+  async updateStreak(userId: string): Promise<void> {
+    console.log('Demo: Updating streak for', userId);
+  }
+
+  async saveWaterIntake(userId: string, amount: number): Promise<void> {
+    this.waterIntakeStore.set(userId, amount);
+    console.log('Demo: Saved water intake', { userId, amount });
+  }
+
+  async getWaterIntake(userId: string): Promise<number> {
+    return this.waterIntakeStore.get(userId) ?? 0;
   }
 }
 

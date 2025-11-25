@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   ViewStyle,
   TextStyle,
+  StyleProp,
 } from 'react-native';
 import { COLORS, FONT_SIZES, FONT_WEIGHTS, SPACING, BORDER_RADIUS } from '../../utils/constants';
 import { lightImpact } from '../../utils/haptics';
@@ -24,8 +25,8 @@ interface ButtonProps {
   disabled?: boolean;
   loading?: boolean;
   fullWidth?: boolean;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
   icon?: React.ReactNode;
 }
 
@@ -56,20 +57,20 @@ export const Button: React.FC<ButtonProps> = ({
     }
   }, [disabled, loading, fullWidth, isDisabled, isFullWidth]);
 
-  const buttonStyles = [
+  const buttonStyles: StyleProp<ViewStyle> = [
     styles.base,
     styles[variant],
     styles[size],
-    isFullWidth && styles.fullWidth,
-    isDisabled && styles.disabled,
+    isFullWidth ? styles.fullWidth : undefined,
+    isDisabled ? styles.disabled : undefined,
     style,
   ];
 
-  const textStyles = [
+  const textStyles: StyleProp<TextStyle> = [
     styles.text,
     styles[`${variant}Text` as keyof typeof styles],
     styles[`${size}Text` as keyof typeof styles],
-    (disabled || loading) && styles.disabledText,
+    (disabled || loading) ? styles.disabledText : undefined,
     textStyle,
   ];
 

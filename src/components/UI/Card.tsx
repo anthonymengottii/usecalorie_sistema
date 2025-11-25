@@ -9,13 +9,14 @@ import {
   StyleSheet,
   ViewStyle,
   Platform,
+  StyleProp,
 } from 'react-native';
 import { SPACING, BORDER_RADIUS } from '../../utils/constants';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface CardProps {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   padding?: keyof typeof SPACING;
   shadow?: boolean;
   borderRadius?: keyof typeof BORDER_RADIUS;
@@ -30,7 +31,7 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   const { colors } = useTheme();
 
-  const cardStyles = [
+  const cardStyles: StyleProp<ViewStyle> = [
     styles.base,
     {
       padding: SPACING[padding],
@@ -38,7 +39,7 @@ export const Card: React.FC<CardProps> = ({
       backgroundColor: colors.surface,
       borderColor: colors.border,
     },
-    shadow && styles.shadow,
+    shadow ? styles.shadow : undefined,
     style,
   ];
 

@@ -67,8 +67,8 @@ export const APP_CONFIG = {
   version: '1.0.0',
   trialDays: 30,
   pricing: {
-    monthly: 1.50,
-    annual: 10.00,
+    monthly: 19.90,
+    annual: 199.00,
   },
   limits: {
     freePhotosPerDay: 5,

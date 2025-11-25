@@ -17,7 +17,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 
-import { Card } from '../../components/UI/Card';
 import { Button } from '../../components/UI/Button';
 import { Heading2, Heading3, BodyText, Caption } from '../../components/UI/Typography';
 import { useFoodStore } from '../../store/foodStore';
@@ -40,10 +39,10 @@ export const HistoryScreen = () => {
 
   const mealTypes: { value: MealType | 'all'; label: string }[] = [
     { value: 'all', label: 'Todas' },
-    { value: 'breakfast', label: 'Desayuno' },
-    { value: 'lunch', label: 'Almuerzo' },
-    { value: 'dinner', label: 'Cena' },
-    { value: 'snack', label: 'Snack' },
+    { value: 'breakfast', label: 'Café da manhã' },
+    { value: 'lunch', label: 'Almoço' },
+    { value: 'dinner', label: 'Jantar' },
+    { value: 'snack', label: 'Lanche' },
     { value: 'supplement', label: 'Suplementos' },
   ];
 
@@ -121,17 +120,17 @@ export const HistoryScreen = () => {
 
   const getMealTypeLabel = (mealType: MealType) => {
     switch (mealType) {
-      case 'breakfast': return 'Desayuno';
-      case 'lunch': return 'Almuerzo';
-      case 'dinner': return 'Cena';
-      case 'snack': return 'Snack';
+      case 'breakfast': return 'Café da manhã';
+      case 'lunch': return 'Almoço';
+      case 'dinner': return 'Jantar';
+      case 'snack': return 'Lanche';
       case 'supplement': return 'Suplemento';
-      default: return 'Comida';
+      default: return 'Refeição';
     }
   };
 
   const renderEntry = ({ item }: { item: FoodEntry }) => (
-    <Card style={styles.entryCard}>
+    <View style={styles.entryCard}>
       <View style={styles.entryHeader}>
         <View style={styles.entryInfo}>
           <View style={styles.entryTitleRow}>
@@ -143,10 +142,10 @@ export const HistoryScreen = () => {
             </BodyText>
           </View>
           <Caption color="textSecondary">
-            {getMealTypeLabel(item.mealType)} • {new Date(item.date).toLocaleTimeString('es-ES', {
+            {getMealTypeLabel(item.mealType)} • {new Date(item.date).toLocaleTimeString('pt-BR', {
               hour: '2-digit',
               minute: '2-digit',
-            })} • {item.servingSize?.amount || item.quantity} {item.servingSize?.unit || 'porción'}
+            })} • {item.servingSize?.amount || item.quantity} {item.servingSize?.unit || 'porção'}
           </Caption>
         </View>
         <View style={styles.entryStats}>
@@ -159,28 +158,22 @@ export const HistoryScreen = () => {
       
       <View style={styles.entryMacros}>
         <View style={styles.macroItem}>
-          <View style={styles.macroHeader}>
-            <Caption color="textSecondary">Proteína</Caption>
-            <BodyText style={styles.macroValue}>
-              {Math.round(item.nutrition.protein)}g
-            </BodyText>
-          </View>
+          <Caption color="textSecondary" style={styles.macroLabel}>Proteína</Caption>
+          <BodyText style={styles.macroValue}>
+            {Math.round(item.nutrition.protein)}g
+          </BodyText>
         </View>
         <View style={styles.macroItem}>
-          <View style={styles.macroHeader}>
-            <Caption color="textSecondary">Carbos</Caption>
-            <BodyText style={styles.macroValue}>
-              {Math.round(item.nutrition.carbs)}g
-            </BodyText>
-          </View>
+          <Caption color="textSecondary" style={styles.macroLabel}>Carboidratos</Caption>
+          <BodyText style={styles.macroValue}>
+            {Math.round(item.nutrition.carbs)}g
+          </BodyText>
         </View>
         <View style={styles.macroItem}>
-          <View style={styles.macroHeader}>
-            <Caption color="textSecondary">Grasas</Caption>
-            <BodyText style={styles.macroValue}>
-              {Math.round(item.nutrition.fat)}g
-            </BodyText>
-          </View>
+          <Caption color="textSecondary" style={styles.macroLabel}>Gorduras</Caption>
+          <BodyText style={styles.macroValue}>
+            {Math.round(item.nutrition.fat)}g
+          </BodyText>
         </View>
       </View>
 
@@ -188,8 +181,8 @@ export const HistoryScreen = () => {
         <View style={styles.additionalNutrition}>
           <Caption color="textSecondary">
             Fibra: {Math.round(item.nutrition.fiber)}g • 
-            Azúcar: {Math.round(item.nutrition.sugar)}g •
-            Sodio: {Math.round(item.nutrition.sodium)}mg
+            Açúcar: {Math.round(item.nutrition.sugar)}g •
+            Sódio: {Math.round(item.nutrition.sodium)}mg
           </Caption>
         </View>
       )}
@@ -201,7 +194,7 @@ export const HistoryScreen = () => {
           </Caption>
         </View>
       )}
-    </Card>
+    </View>
   );
 
   return (
@@ -210,39 +203,42 @@ export const HistoryScreen = () => {
       <View style={[styles.content, { paddingTop: Platform.OS === 'ios' ? 60 : (StatusBar.currentHeight || 0) + 20 }]}>
         {/* Header */}
         <View style={styles.header}>
-          <Heading2 style={styles.screenTitle}>Historial</Heading2>
+          <Heading2 style={styles.screenTitle}>Histórico</Heading2>
         </View>
 
         {/* View Mode Selector */}
-        <Card style={styles.selectorCard}>
+        <View style={styles.selectorCard}>
           <View style={styles.selectorButtons}>
-            <Button
-              title="Diario"
+            <TouchableOpacity
+              style={[styles.selectorButton, viewMode === 'daily' && styles.selectorButtonActive]}
               onPress={() => setViewMode('daily')}
-              variant={viewMode === 'daily' ? 'primary' : 'outline'}
-              size="small"
-              style={styles.selectorButton}
-            />
-            <Button
-              title="Semanal"
+            >
+              <BodyText style={[styles.selectorButtonText, viewMode === 'daily' && styles.selectorButtonTextActive]}>
+                Diário
+              </BodyText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.selectorButton, viewMode === 'weekly' && styles.selectorButtonActive]}
               onPress={() => setViewMode('weekly')}
-              variant={viewMode === 'weekly' ? 'primary' : 'outline'}
-              size="small"
-              style={styles.selectorButton}
-            />
-            <Button
-              title="Mensual"
+            >
+              <BodyText style={[styles.selectorButtonText, viewMode === 'weekly' && styles.selectorButtonTextActive]}>
+                Semanal
+              </BodyText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.selectorButton, viewMode === 'monthly' && styles.selectorButtonActive]}
               onPress={() => setViewMode('monthly')}
-              variant={viewMode === 'monthly' ? 'primary' : 'outline'}
-              size="small"
-              style={styles.selectorButton}
-            />
+            >
+              <BodyText style={[styles.selectorButtonText, viewMode === 'monthly' && styles.selectorButtonTextActive]}>
+                Mensal
+              </BodyText>
+            </TouchableOpacity>
           </View>
-        </Card>
+        </View>
 
         {/* Meal Type Filter */}
-        <Card style={styles.filterCard}>
-          <Heading3 style={styles.filterTitle}>Filtrar por Comida</Heading3>
+        <View style={styles.filterCard}>
+          <BodyText style={styles.filterTitle}>Filtrar por refeição</BodyText>
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={Boolean(false)}
@@ -257,34 +253,37 @@ export const HistoryScreen = () => {
                 ]}
                 onPress={() => setSelectedMealType(mealType.value)}
               >
-                <BodyText style={[
-                  styles.mealFilterText,
-                  selectedMealType === mealType.value && styles.mealFilterTextActive
-                ]}>
+                <BodyText
+                  style={
+                    selectedMealType === mealType.value
+                      ? [styles.mealFilterText, styles.mealFilterTextActive]
+                      : styles.mealFilterText
+                  }
+                >
                   {mealType.label}
                 </BodyText>
               </TouchableOpacity>
             ))}
           </ScrollView>
-        </Card>
+        </View>
 
         {/* Summary Stats */}
-        <Card style={styles.summaryCard}>
-          <Heading3 style={styles.summaryTitle}>
-            Resumen {viewMode === 'daily' ? 'de Hoy' : viewMode === 'weekly' ? 'Semanal' : 'Mensual'}
-          </Heading3>
+        <View style={styles.summaryCard}>
+          <BodyText style={styles.summaryTitle}>
+            Resumo {viewMode === 'daily' ? 'do dia' : viewMode === 'weekly' ? 'semanal' : 'mensal'}
+          </BodyText>
           <View style={styles.summaryStats}>
             <View style={styles.summaryItem}>
               <BodyText style={styles.summaryValue}>
                 {summaryStats.calories}
               </BodyText>
-              <Caption color="textSecondary">Calorías</Caption>
+              <Caption color="textSecondary">Calorias</Caption>
             </View>
             <View style={styles.summaryItem}>
               <BodyText style={styles.summaryValue}>
                 {summaryStats.meals}
               </BodyText>
-              <Caption color="textSecondary">Comidas</Caption>
+              <Caption color="textSecondary">Refeições</Caption>
             </View>
             <View style={styles.summaryItem}>
               <BodyText style={styles.summaryValue}>
@@ -296,20 +295,20 @@ export const HistoryScreen = () => {
               <BodyText style={styles.summaryValue}>
                 {summaryStats.carbs}g
               </BodyText>
-              <Caption color="textSecondary">Carbos</Caption>
+              <Caption color="textSecondary">Carboidratos</Caption>
             </View>
           </View>
-        </Card>
+        </View>
 
         {/* Entries List */}
         <View style={styles.entriesContainer}>
           <View style={styles.entriesHeader}>
             <Heading3>
-              {viewMode === 'daily' ? 'Hoy' : viewMode === 'weekly' ? 'Esta Semana' : 'Este Mes'}
+              {viewMode === 'daily' ? 'Hoje' : viewMode === 'weekly' ? 'Esta semana' : 'Este mês'}
               {selectedMealType !== 'all' && ` • ${mealTypes.find(m => m.value === selectedMealType)?.label}`}
             </Heading3>
             <Caption color="textSecondary">
-              {filteredEntries.length} {filteredEntries.length === 1 ? 'entrada' : 'entradas'}
+              {filteredEntries.length} {filteredEntries.length === 1 ? 'registro' : 'registros'}
             </Caption>
           </View>
 
@@ -330,17 +329,17 @@ export const HistoryScreen = () => {
               }
             />
           ) : (
-            <Card style={styles.emptyState}>
+            <View style={styles.emptyState}>
               <View style={styles.emptyContent}>
                 <BodyText style={styles.emptyEmoji}>📝</BodyText>
-                <Heading3 align="center" style={styles.emptyTitle}>
-                  No hay registros
-                </Heading3>
+                <BodyText align="center" style={styles.emptyTitle}>
+                  Nenhum registro encontrado
+                </BodyText>
                 <BodyText align="center" color="textSecondary">
-                  Comienza a registrar tus comidas para ver tu historial aquí.
+                  Comece a registrar suas refeições para visualizar seu histórico aqui.
                 </BodyText>
               </View>
-            </Card>
+            </View>
           )}
         </View>
       </View>
@@ -356,16 +355,24 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: SPACING.md,
+    padding: SPACING.lg,
+    paddingTop: SPACING.xl,
   },
   header: {
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   screenTitle: {
+    fontSize: 28,
+    fontWeight: '700',
     textAlign: 'left',
   },
   selectorCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.xs,
     marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   selectorButtons: {
     flexDirection: 'row',
@@ -373,12 +380,37 @@ const styles = StyleSheet.create({
   },
   selectorButton: {
     flex: 1,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  selectorButtonActive: {
+    backgroundColor: '#E6F7F3',
+  },
+  selectorButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+  },
+  selectorButtonTextActive: {
+    color: COLORS.primary,
+    fontWeight: '600',
   },
   filterCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.md,
     marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   filterTitle: {
+    fontSize: 16,
+    fontWeight: '600',
     marginBottom: SPACING.md,
+    color: COLORS.text,
   },
   mealFilters: {
     flexDirection: 'row',
@@ -394,23 +426,31 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   mealFilterButtonActive: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: '#E6F7F3',
     borderColor: COLORS.primary,
   },
   mealFilterText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
     color: COLORS.textSecondary,
   },
   mealFilterTextActive: {
-    color: COLORS.surface,
+    color: COLORS.primary,
     fontWeight: '600',
   },
   summaryCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.lg,
     marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   summaryTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     marginBottom: SPACING.md,
+    color: COLORS.text,
   },
   summaryStats: {
     flexDirection: 'row',
@@ -438,7 +478,12 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   entryCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
     padding: SPACING.md,
+    marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   entryHeader: {
     flexDirection: 'row',
@@ -482,10 +527,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
   },
-  macroHeader: {
-    alignItems: 'center',
+  macroLabel: {
+    fontSize: 12,
+    fontWeight: '500',
   },
   macroValue: {
+    fontSize: 16,
     fontWeight: '600',
     color: COLORS.text,
     marginTop: SPACING.xs,
@@ -505,10 +552,16 @@ const styles = StyleSheet.create({
   notes: {
     fontStyle: 'italic',
   },
-  emptyState: {},
+  emptyState: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.xl,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
   emptyContent: {
     alignItems: 'center',
-    paddingVertical: SPACING.xl,
+    paddingVertical: SPACING.lg,
   },
   emptyEmoji: {
     fontSize: 48,
@@ -516,6 +569,9 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     marginBottom: SPACING.sm,
+    color: COLORS.text,
   },
 });

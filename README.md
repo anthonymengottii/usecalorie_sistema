@@ -1,41 +1,197 @@
-# 🥗 CalorIA Demo - Smart Calorie Tracker
+# 🥗 CalorIA - Smart Calorie Tracker
 
-> **Demo Version** - Interactive demo with UI showcase
+> **Aplicativo inteligente de rastreamento nutricional com reconhecimento de alimentos por IA**
 
-## ✨ Live Demo Features
+CalorIA é um aplicativo mobile desenvolvido em React Native que ajuda você a controlar sua alimentação de forma inteligente. Com reconhecimento de alimentos por IA, acompanhamento nutricional detalhado e interface minimalista, o app facilita o alcance de suas metas de saúde.
 
-- 📱 **Complete UI/UX** - Full interface design and navigation
-- 🎨 **Design System** - Custom components and theme
-- 📊 **Mock Data** - Sample nutrition tracking and progress
-- 🔐 **Demo Authentication** - Simulated user login flow
-- 📸 **UI Mockups** - Camera and food recognition interfaces
+## ✨ Funcionalidades Principais
 
-## 🚀 Try the Demo
+### 🔐 Autenticação e Perfil
+- **Sistema de cadastro e login** com armazenamento local seguro
+- **Perfil do usuário** com informações pessoais e metas nutricionais
+- **Estatísticas pessoais** (sequência de dias, refeições registradas, etc.)
+- **Conquistas e gamificação** para motivar o uso diário
 
+### 📸 Reconhecimento de Alimentos
+- **Câmera integrada** para fotografar refeições
+- **Reconhecimento por IA** (simulado) que identifica alimentos automaticamente
+- **Seleção de galeria** para escolher fotos existentes
+- **Análise nutricional** automática dos alimentos identificados
+
+### 📊 Acompanhamento Nutricional
+- **Dashboard diário** com visão geral de calorias e macros
+- **Gráficos de progresso** diário e semanal
+- **Metas personalizadas** de calorias, proteínas, carboidratos e gorduras
+- **Histórico completo** de refeições com filtros por tipo e período
+- **Controle de água** com meta diária de 2 litros
+
+### 📈 Visualizações e Relatórios
+- **Gráfico de progresso nutricional** com cores distintas por nutriente
+- **Gráfico semanal de calorias** com estatísticas resumidas
+- **Visualização diária/semanal/mensal** do histórico
+- **Resumo estatístico** com totais e médias
+
+### 🎯 Onboarding Intuitivo
+- **Carrossel de introdução** com 3 telas explicativas
+- **Configuração de perfil** (idade, peso, altura, gênero)
+- **Definição de metas** (perda/manutenção/ganho de peso)
+- **Configuração de objetivos nutricionais** personalizados
+
+## 🛠️ Tecnologias Utilizadas
+
+### Core
+- **React Native** `0.81.4` - Framework mobile multiplataforma
+- **TypeScript** `~5.9.2` - Tipagem estática
+- **Expo** `~54.0.13` - Plataforma de desenvolvimento
+
+### Navegação e Estado
+- **React Navigation** - Navegação Stack e Bottom Tabs
+- **Zustand** `^5.0.8` - Gerenciamento de estado leve
+
+### UI/UX
+- **Expo Vector Icons** - Ícones Material Design
+- **React Native Chart Kit** - Gráficos e visualizações
+- **Expo Blur** - Efeitos de blur
+- **Custom Design System** - Componentes reutilizáveis
+
+### Armazenamento
+- **AsyncStorage** - Persistência local de dados
+- **js-sha256** - Hash de senhas para segurança
+
+### Câmera e Mídia
+- **Expo Camera** - Acesso à câmera do dispositivo
+- **Expo Image Picker** - Seleção de imagens da galeria
+
+## 🚀 Como Executar
+
+### Pré-requisitos
+- Node.js (versão 18 ou superior)
+- npm ou yarn
+- Expo CLI instalado globalmente (`npm install -g expo-cli`)
+- Expo Go app instalado no dispositivo móvel (para teste)
+
+### Instalação
+
+1. **Clone o repositório**
 ```bash
-npm install
-npm run demo
+git clone https://github.com/anthonymengottii/usecalorie_sistema.git
+cd usecalorie_sistema
 ```
 
-## 📱 Screenshots
+2. **Instale as dependências**
+```bash
+npm install
+```
 
-<img src="./assets/screenshot.png" alt="CalorIA App Screenshot" width="300">
+3. **Inicie o servidor de desenvolvimento**
+```bash
+npm run demo
+# ou
+npm start
+```
 
-## 🛠️ Technologies
+4. **Execute em dispositivo**
+   - **Android**: `npm run demo:android`
+   - **iOS**: `npm run demo:ios`
+   - **Web**: `npm run web`
 
-- **React Native** + TypeScript
-- **Expo** development platform
-- **React Navigation** (Stack + Tabs)
-- **Zustand** state management
-- **Custom Design System**
-- **Responsive UI Components**
+### Scripts Disponíveis
 
-## 🔗 Links
+```bash
+npm start          # Inicia o servidor Expo
+npm run demo       # Inicia com cache limpo
+npm run android    # Executa no Android
+npm run ios        # Executa no iOS
+npm run web        # Executa no navegador
+npm run type-check # Verifica erros TypeScript
+npm run clean      # Limpa o cache e reinicia
+```
 
-- **Contact**: [estefreric@gmail.com](mailto:estefreric@gmail.com)
-- **Portfolio**: [https://alfargenis.github.io/](https://alfargenis.github.io/)
-- **LinkedIn**: [https://www.linkedin.com/in/alfargenis/](https://www.linkedin.com/in/alfargenis/)
+## 📱 Estrutura do Projeto
+
+```
+usecalorie_sistema/
+├── src/
+│   ├── components/          # Componentes reutilizáveis
+│   │   ├── UI/              # Componentes de interface
+│   │   └── Navigation/      # Componentes de navegação
+│   ├── screens/             # Telas da aplicação
+│   │   ├── Auth/            # Autenticação
+│   │   ├── Onboarding/      # Fluxo de onboarding
+│   │   ├── Home/            # Dashboard principal
+│   │   ├── Camera/          # Câmera e reconhecimento
+│   │   ├── History/         # Histórico de refeições
+│   │   └── Profile/         # Perfil e configurações
+│   ├── navigation/          # Configuração de navegação
+│   ├── store/               # Gerenciamento de estado (Zustand)
+│   ├── services/            # Serviços e APIs
+│   ├── utils/               # Utilitários e constantes
+│   └── types/               # Definições TypeScript
+├── App.tsx                   # Componente raiz
+├── package.json              # Dependências e scripts
+└── README.md                # Este arquivo
+```
+
+## 🎨 Design System
+
+O app utiliza um design system minimalista e moderno:
+
+- **Cores**: Paleta verde esmeralda como cor primária
+- **Tipografia**: Hierarquia clara com Heading, Body e Caption
+- **Espaçamento**: Sistema consistente de espaçamento (xs, sm, md, lg, xl)
+- **Componentes**: Botões, inputs, cards e gráficos customizados
+- **Navegação**: Tab bar customizada com área de seleção arredondada
+
+## 📊 Funcionalidades Implementadas
+
+✅ Sistema de autenticação completo (cadastro/login)  
+✅ Persistência local de dados do usuário  
+✅ Onboarding com carrossel e configuração de perfil  
+✅ Dashboard com gráficos de progresso nutricional  
+✅ Reconhecimento de alimentos (simulado)  
+✅ Histórico de refeições com filtros  
+✅ Controle de água diário  
+✅ Perfil do usuário com estatísticas  
+✅ Metas nutricionais personalizáveis  
+✅ Interface minimalista e responsiva  
+
+## 🔮 Próximas Funcionalidades
+
+- [ ] Integração com API real de reconhecimento de alimentos
+- [ ] Sincronização em nuvem (Firebase)
+- [ ] Notificações push
+- [ ] Compartilhamento de progresso
+- [ ] Receitas e sugestões de refeições
+- [ ] Integração com wearables
+- [ ] Modo escuro
+
+## 📸 Screenshots
+
+*Adicione screenshots do app aqui*
+
+## 🤝 Contribuindo
+
+Este é um projeto demo/portfólio. Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou pull requests.
+
+## 📝 Licença
+
+Este projeto é um demo para fins de portfólio.
+
+## 👤 Autor
+
+**Anthony Mengotti de Oliveira**
+
+- GitHub: [@anthonymengottii](https://github.com/anthonymengottii)
+- LinkedIn: [in/anthony-mengotti-50026424a](https://www.linkedin.com/in/anthony-mengotti-50026424a)
+- Instagram: [@ux.mengotti](https://instagram.com/ux.mengotti)
+- CTO @ Upay | Creator of PagueStream
+
+## 🙏 Agradecimentos
+
+- Expo team pelo excelente framework
+- Comunidade React Native
+- Todos os mantenedores das bibliotecas utilizadas
 
 ---
 
-*This is a demo version of the app. The premium version includes all complete functionalities with AI, real-time data, and advanced features.*
+*Este é um projeto demo. A versão completa inclui todas as funcionalidades com IA, dados em tempo real e recursos avançados.*

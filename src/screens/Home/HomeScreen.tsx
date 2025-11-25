@@ -3,7 +3,7 @@
  * Main dashboard with daily nutrition overview
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -16,15 +16,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 // BlurView removed to avoid Android casting errors
 import { useNavigation } from '../../utils/navigation';
-import type { MainTabParamList } from '../../types';
 
 import { MaterialIcons } from '@expo/vector-icons';
-import { Card } from '../../components/UI/Card';
 import { Button } from '../../components/UI/Button';
 import { Heading2, Heading3, BodyText, Caption } from '../../components/UI/Typography';
-import { CalorieProgressChart, WeeklyCaloriesChart, MacroDistributionChart } from '../../components/UI/CaloriaChart';
-import { WaterIntakeWidget } from '../../components/UI/WaterIntakeWidget';
-import { StreakCard } from '../../components/UI/StreakCard';
+import { CalorieProgressChart, WeeklyCaloriesChart } from '../../components/UI/CaloriaChart';
 import { DashboardSkeleton } from '../../components/UI/LoadingSkeleton';
 import { useFoodStore } from '../../store/foodStore';
 import { useUserStore } from '../../store/userStore';
@@ -43,7 +39,8 @@ export const HomeScreen = () => {
     addWaterIntake,
     loadWaterIntake,
     isLoading,
-    addFoodEntry
+    foodEntries,
+    nutritionGoals,
   } = useFoodStore();
 
   const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
@@ -51,91 +48,10 @@ export const HomeScreen = () => {
   useEffect(() => {
     calculateDailyNutrition();
 
-    // Load water intake for today
     if (user?.id) {
       loadWaterIntake(user.id);
     }
-
-    // Add some mock data if none exists
-    if (getTodayEntries().length === 0) {
-      addMockData();
-    }
-  }, [user?.id]);
-
-  const addMockData = () => {
-    const mockEntries = [
-      {
-        food: {
-          id: 'mock1',
-          name: 'Desayuno Saludable',
-          brand: 'Casero',
-          barcode: null,
-        },
-        portion: {
-          amount: 1,
-          unit: 'porción',
-          grams: 250,
-        },
-        nutrition: {
-          calories: 420,
-          protein: 25,
-          carbs: 45,
-          fat: 12,
-          fiber: 8,
-          sugar: 5,
-          sodium: 300,
-          cholesterol: 0,
-          saturatedFat: 3,
-          transFat: 0,
-          potassium: 400,
-          calcium: 150,
-          iron: 4,
-          vitaminA: 25,
-          vitaminC: 60,
-        },
-        mealType: 'breakfast' as const,
-        date: new Date(),
-        notes: 'Avena con frutas',
-        source: 'manual' as const,
-      },
-      {
-        food: {
-          id: 'mock2',
-          name: 'Almuerzo Balanceado',
-          brand: 'Casero',
-          barcode: null,
-        },
-        portion: {
-          amount: 1,
-          unit: 'plato',
-          grams: 400,
-        },
-        nutrition: {
-          calories: 650,
-          protein: 35,
-          carbs: 55,
-          fat: 18,
-          fiber: 12,
-          sugar: 8,
-          sodium: 450,
-          cholesterol: 50,
-          saturatedFat: 6,
-          transFat: 0,
-          potassium: 600,
-          calcium: 200,
-          iron: 6,
-          vitaminA: 30,
-          vitaminC: 40,
-        },
-        mealType: 'lunch' as const,
-        date: new Date(),
-        notes: 'Pollo con verduras',
-        source: 'camera' as const,
-      },
-    ];
-
-    mockEntries.forEach(entry => addFoodEntry(entry));
-  };
+  }, [user?.id, calculateDailyNutrition, loadWaterIntake]);
 
   const handleRefresh = () => {
     calculateDailyNutrition();
@@ -144,12 +60,32 @@ export const HomeScreen = () => {
   const todayEntries = getTodayEntries();
   const hasEntries = todayEntries.length > 0;
 
-  // Mock weekly data for charts
-  const weeklyData = {
-    labels: ['L', 'M', 'X', 'J', 'V', 'S', 'D'],
-    calories: [1800, 2100, 1950, 2200, 1750, 2300, 1900],
-    target: 2000,
-  };
+  const weeklyData = useMemo(() => {
+    if (!foodEntries.length || !nutritionGoals?.calories) {
+      return null;
+    }
+
+    const sorted = [...foodEntries].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    const recent = sorted.slice(-7);
+
+    if (!recent.length) return null;
+
+    const labels = recent.map((entry) =>
+      new Date(entry.date)
+        .toLocaleDateString('pt-BR', { weekday: 'short' })
+        .slice(0, 1)
+        .toUpperCase()
+    );
+    const calories = recent.map((entry) => Math.round(entry.nutrition.calories));
+
+    return {
+      labels,
+      calories,
+      target: nutritionGoals.calories,
+    };
+  }, [foodEntries, nutritionGoals]);
 
   const getNutritionColor = (percentage: number) => {
     if (percentage < 90) return COLORS.error;
@@ -168,7 +104,6 @@ export const HomeScreen = () => {
         >
           <DashboardSkeleton
             showWaterWidget={Boolean(true)}
-            showStreakCard={Boolean(!!user?.stats)}
           />
         </ScrollView>
         <SafeAreaView edges={['bottom']} style={{ backgroundColor: COLORS.background }} />
@@ -181,142 +116,191 @@ export const HomeScreen = () => {
       <StatusBar barStyle="dark-content" translucent={Boolean(true)} backgroundColor="transparent" />
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[styles.content, { paddingTop: Platform.OS === 'ios' ? 60 : StatusBar.currentHeight || 0 + 20 }]}
+        contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={handleRefresh} />
         }
       >
         {/* Welcome Header */}
         <View style={styles.header}>
-          <View style={styles.headerRow}>
-            <Heading2>
-              ¡Hola, {user?.displayName || 'Usuario'}!
-            </Heading2>
-            <MaterialIcons name="waving-hand" size={28} color={COLORS.primary} />
-          </View>
-          <Caption color="textSecondary">
-            {new Date().toLocaleDateString('es-ES', {
+          <Heading2 style={styles.headerTitle}>
+            Olá, {user?.displayName || 'Usuário'}!
+          </Heading2>
+          <Caption color="textSecondary" style={styles.headerDate}>
+            {new Date().toLocaleDateString('pt-BR', {
               weekday: 'long',
-              year: 'numeric',
-              month: 'long',
               day: 'numeric',
+              month: 'long',
             })}
           </Caption>
         </View>
 
-        {/* View Mode Toggle */}
-        <Card style={styles.viewModeCard}>
-          <View style={styles.viewModeContainer}>
-            <TouchableOpacity
-              style={[
-                styles.viewModeButton,
-                viewMode === 'daily' && styles.viewModeButtonActive
-              ]}
-              onPress={() => {
-                selectionFeedback();
-                setViewMode('daily');
-              }}
-            >
-              <BodyText style={[
-                styles.viewModeText,
-                viewMode === 'daily' && styles.viewModeTextActive
-              ]}>
-                Diario
-              </BodyText>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.viewModeButton,
-                viewMode === 'weekly' && styles.viewModeButtonActive
-              ]}
-              onPress={() => {
-                selectionFeedback();
-                setViewMode('weekly');
-              }}
-            >
-              <BodyText style={[
-                styles.viewModeText,
-                viewMode === 'weekly' && styles.viewModeTextActive
-              ]}>
-                Semanal
-              </BodyText>
-            </TouchableOpacity>
+        {/* Nutrition Highlights */}
+        {nutritionGoals && (
+          <View style={styles.nutritionHighlights}>
+            <View style={styles.nutritionRow}>
+              <View style={styles.nutritionCard}>
+                <BodyText style={styles.nutritionEmoji}>🔥</BodyText>
+                <BodyText style={styles.nutritionValue}>
+                  {hasEntries && todayStats 
+                    ? Math.round(todayStats.progress.calories.current)
+                    : nutritionGoals.calories
+                  }
+                </BodyText>
+                <Caption color="textSecondary" style={styles.nutritionLabel}>
+                  {hasEntries && todayStats 
+                    ? `de ${todayStats.goals.calories} cal`
+                    : 'Calorias/dia'
+                  }
+                </Caption>
+              </View>
+              <View style={styles.nutritionCard}>
+                <BodyText style={styles.nutritionEmoji}>🥩</BodyText>
+                <BodyText style={styles.nutritionValue}>
+                  {hasEntries && todayStats
+                    ? Math.round(todayStats.progress.protein.current)
+                    : nutritionGoals.protein
+                  }g
+                </BodyText>
+                <Caption color="textSecondary" style={styles.nutritionLabel}>Proteína</Caption>
+              </View>
+            </View>
+            <View style={styles.nutritionRow}>
+              <View style={styles.nutritionCard}>
+                <BodyText style={styles.nutritionEmoji}>🍞</BodyText>
+                <BodyText style={styles.nutritionValue}>
+                  {hasEntries && todayStats
+                    ? Math.round(todayStats.progress.carbs.current)
+                    : nutritionGoals.carbs
+                  }g
+                </BodyText>
+                <Caption color="textSecondary" style={styles.nutritionLabel}>Carbs</Caption>
+              </View>
+              <View style={styles.nutritionCard}>
+                <BodyText style={styles.nutritionEmoji}>🥑</BodyText>
+                <BodyText style={styles.nutritionValue}>
+                  {hasEntries && todayStats
+                    ? Math.round(todayStats.progress.fat.current)
+                    : nutritionGoals.fat
+                  }g
+                </BodyText>
+                <Caption color="textSecondary" style={styles.nutritionLabel}>Gorduras</Caption>
+              </View>
+            </View>
           </View>
-        </Card>
-
-        {/* Quick Actions */}
-        <Card style={styles.quickActions}>
-          <Heading3 style={styles.sectionTitle}>
-            Acciones Rápidas
-          </Heading3>
-          <View style={styles.actionButtons}>
-            <Button
-              title="Escanear Comida"
-              onPress={() => navigation.navigate('Camera')}
-              variant="primary"
-              style={styles.actionButton}
-              icon={<MaterialIcons name="photo-camera" size={20} color={COLORS.surface} />}
-            />
-            <Button
-              title="Ver Historial"
-              onPress={() => navigation.navigate('History')}
-              variant="outline"
-              style={styles.actionButton}
-              icon={<MaterialIcons name="history" size={20} color={COLORS.primary} />}
-            />
-          </View>
-        </Card>
-
-        {/* Streak Card */}
-        {user?.stats && (
-          <StreakCard
-            currentStreak={user.stats.currentStreak}
-            longestStreak={user.stats.longestStreak}
-            lastActivityDate={user.stats.lastActivityDate}
-          />
         )}
 
-        {/* Water Intake Tracker */}
-        <WaterIntakeWidget
-          currentIntake={waterIntake}
-          goalIntake={2000}
-          onAddWater={(amount) => user?.id && addWaterIntake(amount, user.id)}
+        {/* Quick Action Button */}
+        <Button
+          title="Escanear refeição"
+          onPress={() => navigation.navigate('Camera')}
+          fullWidth
+          style={styles.scanButton}
+          icon={<MaterialIcons name="photo-camera" size={20} color={COLORS.surface} />}
         />
+
+        {/* View Mode Toggle */}
+        <View style={styles.viewModeContainer}>
+          <TouchableOpacity
+            style={[
+              styles.viewModeButton,
+              viewMode === 'daily' && styles.viewModeButtonActive
+            ]}
+            onPress={() => {
+              selectionFeedback();
+              setViewMode('daily');
+            }}
+          >
+            <BodyText style={[
+              styles.viewModeText,
+              viewMode === 'daily' && styles.viewModeTextActive
+            ]}>
+              Diário
+            </BodyText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.viewModeButton,
+              viewMode === 'weekly' && styles.viewModeButtonActive
+            ]}
+            onPress={() => {
+              selectionFeedback();
+              setViewMode('weekly');
+            }}
+          >
+            <BodyText style={[
+              styles.viewModeText,
+              viewMode === 'weekly' && styles.viewModeTextActive
+            ]}>
+              Semanal
+            </BodyText>
+          </TouchableOpacity>
+        </View>
+
+        {/* Stats Row */}
+        <View style={styles.statsRow}>
+          {user?.stats && (
+            <View style={styles.statsCard}>
+              <BodyText style={styles.statsEmoji}>🔥</BodyText>
+              <BodyText style={styles.statsValue}>{user.stats.currentStreak}</BodyText>
+              <Caption color="textSecondary" style={styles.statsLabel}>Dias seguidos</Caption>
+            </View>
+          )}
+          <View style={styles.waterCard}>
+            <View style={styles.waterHeader}>
+              <BodyText style={styles.waterEmoji}>💧</BodyText>
+              <View style={styles.waterInfo}>
+                <BodyText style={styles.waterValue}>
+                  {Math.round(waterIntake)}ml
+                </BodyText>
+                <Caption color="textSecondary" style={styles.waterGoal}>
+                  de 2000ml
+                </Caption>
+              </View>
+            </View>
+            <Button
+              title="+ 200ml"
+              onPress={() => user?.id && addWaterIntake(200, user.id)}
+              size="small"
+              variant="outline"
+              style={styles.waterButton}
+            />
+          </View>
+        </View>
 
         {/* Charts Section */}
         {viewMode === 'daily' && hasEntries && todayStats ? (
-          <>
-            <CalorieProgressChart 
-              data={{
-                calories: todayStats.progress.calories,
-                protein: todayStats.progress.protein,
-                carbs: todayStats.progress.carbs,
-                fat: todayStats.progress.fat,
-              }}
-            />
-            <MacroDistributionChart 
-              data={{
-                protein: todayStats.nutrition.protein,
-                carbs: todayStats.nutrition.carbs,
-                fat: todayStats.nutrition.fat,
-              }}
-            />
-          </>
+          <CalorieProgressChart 
+            data={{
+              calories: todayStats.progress.calories,
+              protein: todayStats.progress.protein,
+              carbs: todayStats.progress.carbs,
+              fat: todayStats.progress.fat,
+            }}
+          />
         ) : viewMode === 'weekly' ? (
-          <WeeklyCaloriesChart weeklyData={weeklyData} />
+          weeklyData ? (
+            <WeeklyCaloriesChart weeklyData={weeklyData} />
+          ) : (
+            <View style={styles.emptyChartCard}>
+              <Caption color="textSecondary" style={styles.emptyChartText}>
+                Ainda não há dados suficientes para exibir o gráfico semanal. Registre refeições ao longo da semana para acompanhar sua evolução.
+              </Caption>
+            </View>
+          )
         ) : null}
 
         {/* Daily Progress */}
         {hasEntries && todayStats ? (
-          <Card style={styles.progressCard}>
+          <View style={styles.progressCard}>
             <Heading3 style={styles.sectionTitle}>
-              Progreso de Hoy
+              Progresso de hoje
             </Heading3>
             
             {/* Calories */}
             <View style={styles.progressItem}>
               <View style={styles.progressHeader}>
-                <BodyText style={styles.progressLabel}>Calorías</BodyText>
+                <BodyText style={styles.progressLabel}>Calorias</BodyText>
                 <BodyText style={[
                   styles.progressValue,
                   { color: getNutritionColor(todayStats.progress.calories.percentage) }
@@ -340,61 +324,64 @@ export const HomeScreen = () => {
             {/* Macros */}
             <View style={styles.macrosContainer}>
               <View style={styles.macroItem}>
-                <Caption color="textSecondary">Proteína</Caption>
+                <BodyText style={styles.macroEmoji}>🥩</BodyText>
                 <BodyText style={[
                   styles.macroValue,
                   { color: getNutritionColor(todayStats.progress.protein.percentage) }
                 ] as any}>
                   {Math.round(todayStats.progress.protein.current)}g
                 </BodyText>
+                <Caption color="textSecondary" style={styles.macroLabel}>Proteína</Caption>
               </View>
               <View style={styles.macroItem}>
-                <Caption color="textSecondary">Carbos</Caption>
+                <BodyText style={styles.macroEmoji}>🍞</BodyText>
                 <BodyText style={[
                   styles.macroValue,
                   { color: getNutritionColor(todayStats.progress.carbs.percentage) }
                 ] as any}>
                   {Math.round(todayStats.progress.carbs.current)}g
                 </BodyText>
+                <Caption color="textSecondary" style={styles.macroLabel}>Carbs</Caption>
               </View>
               <View style={styles.macroItem}>
-                <Caption color="textSecondary">Grasas</Caption>
+                <BodyText style={styles.macroEmoji}>🥑</BodyText>
                 <BodyText style={[
                   styles.macroValue,
                   { color: getNutritionColor(todayStats.progress.fat.percentage) }
                 ] as any}>
                   {Math.round(todayStats.progress.fat.current)}g
                 </BodyText>
+                <Caption color="textSecondary" style={styles.macroLabel}>Gorduras</Caption>
               </View>
             </View>
-          </Card>
+          </View>
         ) : (
           /* Empty State */
-          <Card style={styles.emptyState}>
+          <View style={styles.emptyState}>
             <View style={styles.emptyContent}>
               <MaterialIcons name="restaurant" size={64} color={COLORS.textSecondary} style={styles.emptyIcon} />
               <Heading3 align="center" style={styles.emptyTitle}>
-                ¡Registra tu primera comida!
+                Registre sua primeira refeição!
               </Heading3>
               <BodyText align="center" color="textSecondary" style={styles.emptyDescription}>
-                Usa la cámara para escanear tu comida o agrégala manualmente para comenzar a trackear tus calorías.
+                Use a câmera para escanear sua refeição ou adicione manualmente para começar a acompanhar suas calorias.
               </BodyText>
               <Button
-                title="Comenzar Ahora"
+                title="Começar agora"
                 onPress={() => navigation.navigate('Camera')}
                 style={styles.emptyButton}
               />
             </View>
-          </Card>
+          </View>
         )}
 
         {/* Recent Meals */}
         {hasEntries && (
-          <Card style={styles.recentMeals}>
+          <View style={styles.recentMeals}>
             <View style={styles.sectionHeader}>
-              <Heading3>Comidas Recientes</Heading3>
+              <Heading3>Refeições recentes</Heading3>
               <Button
-                title="Ver Todo"
+                title="Ver tudo"
                 onPress={() => navigation.navigate('History')}
                 variant="ghost"
                 size="small"
@@ -415,7 +402,7 @@ export const HomeScreen = () => {
                 </BodyText>
               </View>
             ))}
-          </Card>
+          </View>
         )}
       </ScrollView>
       <SafeAreaView edges={['bottom']} style={{ backgroundColor: COLORS.background }} />
@@ -431,60 +418,179 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: SPACING.sm,
+    padding: SPACING.lg,
+    paddingTop: SPACING.xl,
   },
   header: {
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.lg,
   },
-  headerRow: {
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: SPACING.xs,
+  },
+  headerDate: {
+    fontSize: 14,
+    textTransform: 'capitalize',
+  },
+  nutritionHighlights: {
+    gap: SPACING.md,
+    marginBottom: SPACING.lg,
+  },
+  nutritionRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
+    gap: SPACING.md,
   },
-  viewModeCard: {
-    marginBottom: SPACING.sm,
-    padding: SPACING.xs,
+  nutritionCard: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    minHeight: 110,
+    justifyContent: 'center',
+  },
+  nutritionEmoji: {
+    fontSize: 24,
+    marginBottom: SPACING.xs,
+    lineHeight: 30,
+  },
+  nutritionValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.primary,
+    marginBottom: SPACING.xs,
+  },
+  nutritionLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    textAlign: 'center',
   },
   viewModeContainer: {
     flexDirection: 'row',
-    backgroundColor: COLORS.background,
-    borderRadius: 8,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
     padding: SPACING.xs,
+    marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   viewModeButton: {
     flex: 1,
-    paddingVertical: SPACING.sm,
+    paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.md,
-    borderRadius: 6,
+    borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   viewModeButtonActive: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: '#E6F7F3',
   },
   viewModeText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '500',
     color: COLORS.textSecondary,
   },
   viewModeTextActive: {
-    color: COLORS.surface,
+    color: COLORS.primary,
     fontWeight: '600',
   },
-  quickActions: {
-    marginBottom: SPACING.sm,
+  scanButton: {
+    marginBottom: SPACING.md,
   },
-  sectionTitle: {
-    marginBottom: SPACING.sm,
-  },
-  actionButtons: {
+  statsRow: {
     flexDirection: 'row',
-    gap: SPACING.sm,
+    gap: SPACING.md,
+    marginBottom: SPACING.lg,
   },
-  actionButton: {
+  statsCard: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    minHeight: 100,
+    justifyContent: 'center',
+  },
+  statsEmoji: {
+    fontSize: 28,
+    marginBottom: SPACING.xs,
+    lineHeight: 35,
+  },
+  statsValue: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: COLORS.primary,
+    marginBottom: SPACING.xs,
+  },
+  statsLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  waterCard: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    minHeight: 100,
+    justifyContent: 'space-between',
+  },
+  waterHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    marginBottom: SPACING.sm,
+  },
+  waterEmoji: {
+    fontSize: 28,
+    lineHeight: 35,
+  },
+  waterInfo: {
     flex: 1,
   },
+  waterValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.primary,
+    marginBottom: 2,
+  },
+  waterGoal: {
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  waterButton: {
+    marginTop: SPACING.xs,
+  },
+  sectionTitle: {
+    marginBottom: SPACING.md,
+    fontSize: 18,
+    fontWeight: '600',
+  },
   progressCard: {
-    marginBottom: SPACING.sm,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.lg,
+    marginBottom: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  emptyChartCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.lg,
+    marginBottom: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  emptyChartText: {
+    textAlign: 'center',
+    lineHeight: 20,
   },
   progressItem: {
     marginBottom: SPACING.sm,
@@ -502,9 +608,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   progressBar: {
-    height: 8,
+    height: 10,
     backgroundColor: COLORS.border,
-    borderRadius: 4,
+    borderRadius: 5,
     overflow: 'hidden',
   },
   progressFill: {
@@ -514,19 +620,36 @@ const styles = StyleSheet.create({
   macrosContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingTop: SPACING.md,
+    paddingTop: SPACING.lg,
+    marginTop: SPACING.md,
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
   },
   macroItem: {
     alignItems: 'center',
+    flex: 1,
+  },
+  macroEmoji: {
+    fontSize: 24,
+    marginBottom: SPACING.xs,
+    lineHeight: 30,
   },
   macroValue: {
-    fontWeight: '600',
-    marginTop: SPACING.xs,
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: SPACING.xs,
+  },
+  macroLabel: {
+    fontSize: 12,
+    fontWeight: '500',
   },
   emptyState: {
-    marginBottom: SPACING.sm,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.xl,
+    marginBottom: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   emptyContent: {
     alignItems: 'center',
@@ -546,7 +669,12 @@ const styles = StyleSheet.create({
     minWidth: 150,
   },
   recentMeals: {
-    marginBottom: SPACING.sm,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.lg,
+    marginBottom: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -558,7 +686,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: SPACING.sm,
+    paddingVertical: SPACING.md,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },

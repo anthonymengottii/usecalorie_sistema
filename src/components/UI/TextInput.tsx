@@ -12,6 +12,7 @@ import {
   ViewStyle,
   TextStyle,
   TextInputProps as RNTextInputProps,
+  StyleProp,
 } from 'react-native';
 import { COLORS, FONT_SIZES, FONT_WEIGHTS, SPACING, BORDER_RADIUS } from '../../utils/constants';
 import { logger } from '../../utils/logger';
@@ -20,11 +21,13 @@ interface TextInputProps extends Omit<RNTextInputProps, 'style'> {
   label?: string;
   error?: string;
   fullWidth?: boolean;
-  style?: ViewStyle;
-  inputStyle?: TextStyle;
-  labelStyle?: TextStyle;
+  style?: StyleProp<ViewStyle>;
+  inputStyle?: StyleProp<TextStyle>;
+  labelStyle?: StyleProp<TextStyle>;
   variant?: 'default' | 'outline' | 'filled';
   size?: 'small' | 'medium' | 'large';
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
 }
 
 export const TextInput: React.FC<TextInputProps> = ({
@@ -36,42 +39,44 @@ export const TextInput: React.FC<TextInputProps> = ({
   labelStyle,
   variant = 'outline',
   size = 'medium',
+  leftIcon,
+  rightIcon,
   ...props
 }) => {
-  const containerStyles = [
+  const containerStyles: StyleProp<ViewStyle> = [
     styles.container,
-    fullWidth && styles.fullWidth,
+    fullWidth ? styles.fullWidth : undefined,
     style,
   ];
 
-  const inputContainerStyles = [
+  const inputContainerStyles: StyleProp<ViewStyle> = [
     styles.inputContainer,
     styles[variant],
     styles[size],
-    error && styles.error,
+    error ? styles.error : undefined,
   ];
 
-  const textInputStyles = [
+  const textInputStyles: StyleProp<TextStyle> = [
     styles.input,
     styles[`${size}Input` as keyof typeof styles],
     inputStyle,
   ];
 
-  const labelStyles = [
+  const labelStyles: StyleProp<TextStyle> = [
     styles.label,
     styles[`${size}Label` as keyof typeof styles],
-    error && styles.errorLabel,
+    error ? styles.errorLabel : undefined,
     labelStyle,
   ];
 
   // Normalize boolean props to ensure they are actual booleans, not strings
   const normalizedProps = {
     ...props,
-    secureTextEntry: Boolean(props.secureTextEntry === true || props.secureTextEntry === 'true'),
-    autoFocus: Boolean(props.autoFocus === true || props.autoFocus === 'true'),
-    multiline: Boolean(props.multiline === true || props.multiline === 'true'),
-    editable: Boolean(props.editable !== false && props.editable !== 'false'),
-    autoCorrect: Boolean(props.autoCorrect === true || props.autoCorrect === 'true'),
+    secureTextEntry: props.secureTextEntry === true,
+    autoFocus: props.autoFocus === true,
+    multiline: props.multiline === true,
+    editable: props.editable !== false,
+    autoCorrect: props.autoCorrect !== false,
   };
 
   // Log prop normalization for debugging
@@ -97,11 +102,25 @@ export const TextInput: React.FC<TextInputProps> = ({
         </Text>
       )}
       <View style={inputContainerStyles}>
+        {leftIcon && (
+          <View style={styles.iconContainer}>
+            {leftIcon}
+          </View>
+        )}
         <RNTextInput
-          style={textInputStyles}
+          style={[
+            textInputStyles,
+            leftIcon ? styles.inputWithLeftIcon : null,
+            rightIcon ? styles.inputWithRightIcon : null,
+          ]}
           placeholderTextColor={COLORS.textSecondary}
           {...normalizedProps}
         />
+        {rightIcon && (
+          <View style={styles.iconContainer}>
+            {rightIcon}
+          </View>
+        )}
       </View>
       {error && (
         <Text style={styles.errorText}>
@@ -134,6 +153,8 @@ const styles = StyleSheet.create({
   inputContainer: {
     borderRadius: BORDER_RADIUS.md,
     borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   default: {
     borderColor: COLORS.border,
@@ -168,6 +189,17 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
+  },
+  inputWithLeftIcon: {
+    paddingLeft: SPACING.xs,
+  },
+  inputWithRightIcon: {
+    paddingRight: SPACING.xs,
+  },
+  iconContainer: {
+    paddingHorizontal: SPACING.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   // Input sizes

@@ -13,9 +13,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Card } from '../../components/UI/Card';
 import { Button } from '../../components/UI/Button';
-import { Heading1, Heading2, Heading3, BodyText, Caption } from '../../components/UI/Typography';
+import { Heading2, BodyText, Caption } from '../../components/UI/Typography';
 import { COLORS, SPACING } from '../../utils/constants';
 import { useNavigation } from '../../utils/navigation';
 
@@ -32,52 +31,52 @@ const FEATURES: Feature[] = [
   {
     id: 1,
     emoji: '🧠',
-    title: 'Inteligencia Artificial Avanzada',
-    description: 'Reconocimiento instantáneo de alimentos con precisión superior al 90%',
+    title: 'Inteligência artificial avançada',
+    description: 'Reconhecimento instantâneo de alimentos com precisão acima de 90%',
     benefits: [
-      'Identifica más de 1000 alimentos diferentes',
-      'Calcula porciones automáticamente',
-      'Mejora con cada escaneo que haces',
-      'Funciona con cualquier tipo de comida'
+      'Identifica mais de 1000 alimentos diferentes',
+      'Calcula porções automaticamente',
+      'Fica mais precisa a cada novo escaneamento',
+      'Funciona com qualquer tipo de refeição'
     ],
     color: COLORS.primary,
   },
   {
     id: 2,
     emoji: '📊',
-    title: 'Dashboard Inteligente',
-    description: 'Visualiza tu progreso con charts profesionales y insights personalizados',
+    title: 'Dashboard inteligente',
+    description: 'Visualize seu progresso com gráficos profissionais e insights personalizados',
     benefits: [
-      'Charts dinámicos de calorías y macros',
-      'Tendencias semanales y mensuales',
-      'Comparación con objetivos',
-      'Insights nutricionales automáticos'
+      'Gráficos dinâmicos de calorias e macros',
+      'Tendências semanais e mensais',
+      'Comparação com suas metas',
+      'Insights nutricionais automáticos'
     ],
     color: COLORS.secondary,
   },
   {
     id: 3,
     emoji: '🎯',
-    title: 'Objetivos Personalizados',
-    description: 'Metas adaptadas a tu cuerpo, estilo de vida y objetivos específicos',
+    title: 'Metas personalizadas',
+    description: 'Objetivos adaptados ao seu corpo, estilo de vida e metas específicas',
     benefits: [
-      'Cálculo científico de necesidades calóricas',
-      'Distribución óptima de macronutrientes',
-      'Ajustes automáticos según progreso',
-      'Recomendaciones personalizadas'
+      'Cálculo científico das necessidades calóricas',
+      'Distribuição ideal de macronutrientes',
+      'Ajustes automáticos conforme o progresso',
+      'Recomendações personalizadas'
     ],
     color: COLORS.success,
   },
   {
     id: 4,
     emoji: '💰',
-    title: 'Precio Accesible',
-    description: 'La mejor relación calidad-precio del mercado',
+    title: 'Preço acessível',
+    description: 'A melhor relação custo-benefício do mercado',
     benefits: [
-      '30 días completamente gratis',
-      'Solo $1.50/mes después del trial',
-      '70% más barato que la competencia',
-      'Cancela en cualquier momento'
+      '30 dias totalmente grátis',
+      'Apenas R$ 19,90/mês após o teste',
+      '70% mais barato que a concorrência',
+      'Cancele quando quiser'
     ],
     color: COLORS.primary,
   },
@@ -85,7 +84,11 @@ const FEATURES: Feature[] = [
 
 const { width: screenWidth } = Dimensions.get('window');
 
-export const FeaturesScreen = () => {
+interface FeaturesScreenProps {
+  onNext?: () => void;
+}
+
+export const FeaturesScreen = ({ onNext }: FeaturesScreenProps = {}) => {
   const navigation = useNavigation();
   const [currentFeature, setCurrentFeature] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -108,19 +111,31 @@ export const FeaturesScreen = () => {
         }).start();
       });
     } else {
-      navigation.navigate('ProfileSetup');
+      if (onNext) {
+        onNext();
+      } else {
+        navigation.navigate('ProfileSetup');
+      }
     }
   };
 
   const handleSkip = () => {
-    navigation.navigate('ProfileSetup');
+    if (onNext) {
+      onNext();
+    } else {
+      navigation.navigate('ProfileSetup');
+    }
   };
 
   const feature = FEATURES[currentFeature];
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={Boolean(false)}
+      >
         {/* Progress Indicator */}
         <View style={styles.progressContainer}>
           <View style={styles.progressBar}>
@@ -135,7 +150,7 @@ export const FeaturesScreen = () => {
             ))}
           </View>
           <Button
-            title="Saltar"
+            title="Pular"
             onPress={handleSkip}
             variant="ghost"
             size="small"
@@ -145,91 +160,38 @@ export const FeaturesScreen = () => {
         {/* Feature Content */}
         <Animated.View style={[styles.featureContainer, { opacity: fadeAnim }]}>
           <View style={styles.featureHeader}>
-            <View style={[styles.featureIcon, { backgroundColor: feature.color }]}>
-              <BodyText style={styles.featureEmoji}>{feature.emoji}</BodyText>
-            </View>
+            <BodyText style={styles.featureEmoji}>{feature.emoji}</BodyText>
             <Heading2 style={styles.featureTitle}>{feature.title}</Heading2>
             <BodyText align="center" color="textSecondary" style={styles.featureDescription}>
               {feature.description}
             </BodyText>
           </View>
 
-          <Card style={styles.benefitsCard}>
-            <Heading3 style={styles.benefitsTitle}>Beneficios clave:</Heading3>
-            <View style={styles.benefitsList}>
-              {feature.benefits.map((benefit, index) => (
-                <View key={index} style={styles.benefitItem}>
-                  <View style={[styles.benefitBullet, { backgroundColor: feature.color }]}>
-                    <BodyText style={styles.benefitBulletText}>✓</BodyText>
-                  </View>
-                  <BodyText style={styles.benefitText}>{benefit}</BodyText>
+          {/* Benefits List - Simplified */}
+          <View style={styles.benefitsContainer}>
+            {feature.benefits.map((benefit, index) => (
+              <View key={index} style={styles.benefitItem}>
+                <View style={[styles.benefitBullet, { backgroundColor: feature.color }]}>
+                  <BodyText style={styles.benefitBulletText}>✓</BodyText>
                 </View>
-              ))}
-            </View>
-          </Card>
-
-          {/* Feature Demo */}
-          {currentFeature === 0 && (
-            <Card style={styles.demoCard}>
-              <View style={styles.demoContent}>
-                <BodyText style={styles.demoEmoji}>📸➡️🍎➡️📊</BodyText>
-                <Caption align="center" color="textSecondary">
-                  Toma foto → IA reconoce → Datos nutricionales listos
-                </Caption>
+                <BodyText style={styles.benefitText}>{benefit}</BodyText>
               </View>
-            </Card>
-          )}
-
-          {currentFeature === 1 && (
-            <Card style={styles.demoCard}>
-              <View style={styles.demoContent}>
-                <BodyText style={styles.demoEmoji}>📈</BodyText>
-                <Caption align="center" color="textSecondary">
-                  Charts profesionales como apps premium de $10+/mes
-                </Caption>
-              </View>
-            </Card>
-          )}
-
-          {currentFeature === 2 && (
-            <Card style={styles.demoCard}>
-              <View style={styles.demoContent}>
-                <BodyText style={styles.demoEmoji}>🎯</BodyText>
-                <Caption align="center" color="textSecondary">
-                  Metas científicamente calculadas para TU cuerpo
-                </Caption>
-              </View>
-            </Card>
-          )}
-
-          {currentFeature === 3 && (
-            <Card style={[styles.demoCard, { backgroundColor: COLORS.success }]}>
-              <View style={styles.demoContent}>
-                <BodyText style={styles.demoEmoji}>💰</BodyText>
-                <BodyText style={[styles.benefitText, { color: COLORS.surface }]}>
-                  Cal AI: $5/mes • MyFitnessPal: $10/mes
-                </BodyText>
-                <Heading3 style={[styles.benefitsTitle, { color: COLORS.surface, marginTop: SPACING.xs }]}>
-                  CalorIA: $1.50/mes 🎉
-                </Heading3>
-              </View>
-            </Card>
-          )}
+            ))}
+          </View>
         </Animated.View>
+      </ScrollView>
 
-        {/* Navigation */}
-        <View style={styles.navigation}>
-          <BodyText color="textSecondary">
-            {currentFeature + 1} de {FEATURES.length}
-          </BodyText>
-          <Button
-            title={currentFeature === FEATURES.length - 1 ? "¡Empezar Ahora!" : "Siguiente"}
-            onPress={handleNext}
-            size="large"
-            fullWidth
-            style={[styles.nextButton, { backgroundColor: feature.color }]}
-          />
-        </View>
+      {/* Navigation - Fixed at bottom */}
+      <View style={styles.navigationContainer}>
+        <BodyText color="textSecondary" style={styles.counter}>
+          {currentFeature + 1} de {FEATURES.length}
+        </BodyText>
+        <Button
+          title={currentFeature === FEATURES.length - 1 ? "Continuar" : "Próximo"}
+          onPress={handleNext}
+          size="large"
+          fullWidth
+        />
       </View>
     </SafeAreaView>
   );
@@ -240,9 +202,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  content: {
+  scrollView: {
     flex: 1,
-    padding: SPACING.lg,
+  },
+  scrollContent: {
+    padding: SPACING.xl,
+    paddingBottom: SPACING.xl,
   },
   progressContainer: {
     flexDirection: 'row',
@@ -262,93 +227,73 @@ const styles = StyleSheet.create({
   },
   progressDotActive: {
     backgroundColor: COLORS.primary,
+    width: 24,
   },
   featureContainer: {
     flex: 1,
-    justifyContent: 'center',
+    minHeight: 400,
   },
   featureHeader: {
     alignItems: 'center',
-    marginBottom: SPACING.xl,
-  },
-  featureIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: SPACING.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8,
+    marginBottom: SPACING.xl * 2,
   },
   featureEmoji: {
-    fontSize: 36,
-    color: COLORS.surface,
+    fontSize: 64,
+    marginBottom: SPACING.lg,
+    lineHeight: 80,
+    textAlign: 'center',
   },
   featureTitle: {
     textAlign: 'center',
     marginBottom: SPACING.md,
-    paddingHorizontal: SPACING.md,
+    fontSize: 26,
+    fontWeight: '600',
+    color: COLORS.text,
   },
   featureDescription: {
     textAlign: 'center',
     paddingHorizontal: SPACING.lg,
-    lineHeight: 22,
+    lineHeight: 24,
+    fontSize: 16,
   },
-  benefitsCard: {
-    marginBottom: SPACING.lg,
-  },
-  benefitsTitle: {
-    marginBottom: SPACING.md,
-  },
-  benefitsList: {
+  benefitsContainer: {
     gap: SPACING.md,
   },
   benefitItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: SPACING.sm,
+    gap: SPACING.md,
+    paddingVertical: SPACING.xs,
   },
   benefitBullet: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 2,
   },
   benefitBulletText: {
     color: COLORS.surface,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
   },
   benefitText: {
     flex: 1,
-    lineHeight: 20,
+    lineHeight: 22,
+    fontSize: 15,
+    color: COLORS.text,
   },
-  demoCard: {
-    marginBottom: SPACING.lg,
+  navigationContainer: {
+    padding: SPACING.xl,
+    paddingTop: SPACING.lg,
+    backgroundColor: COLORS.background,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
   },
-  demoContent: {
-    alignItems: 'center',
-    paddingVertical: SPACING.md,
-  },
-  demoEmoji: {
-    fontSize: 32,
-    marginBottom: SPACING.sm,
-  },
-  navigation: {
-    alignItems: 'center',
-    gap: SPACING.md,
-  },
-  nextButton: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+  counter: {
+    textAlign: 'center',
+    marginBottom: SPACING.md,
+    fontSize: 14,
   },
 });

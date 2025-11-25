@@ -1,11 +1,12 @@
-// 🚀 DEMO VERSION - Mock data and limited persistence
 /**
  * CalorIA - Food Store (Zustand)
  * Manages food entries, daily stats, and nutrition tracking
+ * Now with full local persistence via AsyncStorage
  */
 
 import { create } from 'zustand';
 import { firebaseService } from '../services/FirebaseService';
+import { StorageService } from '../services/StorageServiceFallback';
 import type {
   FoodEntry,
   DailyStats,
@@ -26,14 +27,14 @@ interface FoodState {
   lastRecognitionResult: FoodRecognitionResult | null;
 
   // Actions
-  addFoodEntry: (entry: Omit<FoodEntry, 'id'>) => void;
-  updateFoodEntry: (id: string, updates: Partial<FoodEntry>) => void;
-  deleteFoodEntry: (id: string) => void;
+  addFoodEntry: (entry: Omit<FoodEntry, 'id'>) => Promise<void>;
+  updateFoodEntry: (id: string, updates: Partial<FoodEntry>) => Promise<void>;
+  deleteFoodEntry: (id: string) => Promise<void>;
   addWaterIntake: (amount: number, userId: string) => Promise<void>;
   loadWaterIntake: (userId: string) => Promise<void>;
   resetWaterIntake: () => void;
   setTodayStats: (stats: DailyStats) => void;
-  updateNutritionGoals: (goals: Partial<NutritionGoals>) => void;
+  updateNutritionGoals: (goals: Partial<NutritionGoals>) => Promise<void>;
   setRecognitionResult: (result: FoodRecognitionResult | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -57,34 +58,109 @@ export const useFoodStore = create<FoodState>()((set, get) => ({
       lastRecognitionResult: null,
 
       // Actions
-      addFoodEntry: (entryData) => {
+      addFoodEntry: async (entryData) => {
         const entry: FoodEntry = {
           ...entryData,
           id: `entry_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         };
 
-        set((state) => ({
-          foodEntries: [...state.foodEntries, entry],
-        }));
+        const newEntries = [...get().foodEntries, entry];
+        set({ foodEntries: newEntries });
+
+        // Save to local storage
+        try {
+          await StorageService.saveFoodEntries(entryData.userId, newEntries);
+          // Also try to save to Firebase (async, don't wait)
+          firebaseService.saveFoodEntry(entryData.userId, entryData).catch(err => 
+            console.warn('⚠️ Failed to sync entry to Firebase:', err)
+          );
+        } catch (error) {
+          console.error('❌ Error saving food entry:', error);
+        }
+
+        // Update user stats
+        try {
+          const { useUserStore } = await import('./userStore');
+          const user = useUserStore.getState().user;
+          if (user) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const lastActivity = user.stats?.lastActivityDate 
+              ? new Date(user.stats.lastActivityDate) 
+              : null;
+            const lastActivityDate = lastActivity ? new Date(lastActivity) : null;
+            if (lastActivityDate) lastActivityDate.setHours(0, 0, 0, 0);
+
+            const isNewDay = !lastActivityDate || lastActivityDate.getTime() !== today.getTime();
+            const currentStreak = user.stats?.currentStreak || 0;
+            const newStreak = isNewDay 
+              ? (lastActivityDate && lastActivityDate.getTime() === today.getTime() - 86400000 
+                  ? currentStreak + 1 
+                  : 1)
+              : currentStreak;
+
+            const updatedStats = {
+              currentStreak: newStreak,
+              longestStreak: Math.max(newStreak, user.stats?.longestStreak || 0),
+              totalMealsLogged: (user.stats?.totalMealsLogged || 0) + 1,
+              totalDaysTracked: isNewDay 
+                ? (user.stats?.totalDaysTracked || 0) + 1 
+                : (user.stats?.totalDaysTracked || 0),
+              lastActivityDate: today,
+              avgCaloriesPerDay: user.stats?.avgCaloriesPerDay || 0, // Will be recalculated
+            };
+
+            await useUserStore.getState().updateUser({
+              stats: updatedStats,
+            });
+
+            // Update streak in Firebase
+            if (isNewDay) {
+              firebaseService.updateStreak(user.id).catch(err => 
+                console.warn('⚠️ Failed to update streak:', err)
+              );
+            }
+          }
+        } catch (error) {
+          console.error('❌ Error updating user stats:', error);
+        }
 
         // Recalculate daily stats
         get().calculateDailyNutrition();
       },
 
-      updateFoodEntry: (id, updates) => {
-        set((state) => ({
-          foodEntries: state.foodEntries.map((entry) =>
-            entry.id === id ? { ...entry, ...updates } : entry
-          ),
-        }));
+      updateFoodEntry: async (id, updates) => {
+        const updatedEntries = get().foodEntries.map((entry) =>
+          entry.id === id ? { ...entry, ...updates } : entry
+        );
+        set({ foodEntries: updatedEntries });
+
+        // Save to local storage
+        const entry = updatedEntries.find(e => e.id === id);
+        if (entry) {
+          try {
+            await StorageService.saveFoodEntries(entry.userId, updatedEntries);
+          } catch (error) {
+            console.error('❌ Error updating food entry:', error);
+          }
+        }
 
         get().calculateDailyNutrition();
       },
 
-      deleteFoodEntry: (id) => {
-        set((state) => ({
-          foodEntries: state.foodEntries.filter((entry) => entry.id !== id),
-        }));
+      deleteFoodEntry: async (id) => {
+        const entry = get().foodEntries.find(e => e.id === id);
+        const filteredEntries = get().foodEntries.filter((entry) => entry.id !== id);
+        set({ foodEntries: filteredEntries });
+
+        // Save to local storage
+        if (entry) {
+          try {
+            await StorageService.saveFoodEntries(entry.userId, filteredEntries);
+          } catch (error) {
+            console.error('❌ Error deleting food entry:', error);
+          }
+        }
 
         get().calculateDailyNutrition();
       },
@@ -93,14 +169,41 @@ export const useFoodStore = create<FoodState>()((set, get) => ({
         const newTotal = get().waterIntake + amount;
         set({ waterIntake: newTotal });
 
-        // Save to Firebase
-        await firebaseService.saveWaterIntake(userId, newTotal);
+        // Save to Firebase (and local via user profile)
+        try {
+          await firebaseService.saveWaterIntake(userId, newTotal);
+          // Also save in user profile for persistence
+          const user = (await import('./userStore')).useUserStore.getState().user;
+          if (user) {
+            await StorageService.saveUser({
+              ...user,
+              profile: {
+                ...user.profile,
+                waterIntake: newTotal,
+              } as any,
+            });
+          }
+        } catch (error) {
+          console.error('❌ Error saving water intake:', error);
+        }
       },
 
       loadWaterIntake: async (userId) => {
-        const waterIntake = await firebaseService.getWaterIntake(userId);
-        set({ waterIntake });
-        console.log(`💧 Loaded water intake: ${waterIntake}ml`);
+        try {
+          // Try Firebase first
+          const cloudIntake = await firebaseService.getWaterIntake(userId);
+          
+          // Also check user profile
+          const user = (await import('./userStore')).useUserStore.getState().user;
+          const localIntake = (user?.profile as any)?.waterIntake || 0;
+          
+          // Use the higher value (most recent)
+          const waterIntake = Math.max(cloudIntake, localIntake);
+          set({ waterIntake });
+          console.log(`💧 Loaded water intake: ${waterIntake}ml`);
+        } catch (error) {
+          console.error('❌ Error loading water intake:', error);
+        }
       },
 
       resetWaterIntake: () => {
@@ -111,13 +214,28 @@ export const useFoodStore = create<FoodState>()((set, get) => ({
         set({ todayStats });
       },
 
-      updateNutritionGoals: (goalUpdates) => {
-        set((state) => ({
-          nutritionGoals: {
-            ...state.nutritionGoals,
-            ...goalUpdates,
-          },
-        }));
+      updateNutritionGoals: async (goalUpdates) => {
+        const newGoals = {
+          ...get().nutritionGoals,
+          ...goalUpdates,
+        };
+        set({ nutritionGoals: newGoals });
+
+        // Save to local storage
+        try {
+          const user = (await import('./userStore')).useUserStore.getState().user;
+          if (user) {
+            await StorageService.saveUser({
+              ...user,
+              profile: {
+                ...user.profile,
+                nutritionGoals: newGoals,
+              } as any,
+            });
+          }
+        } catch (error) {
+          console.error('❌ Error saving nutrition goals:', error);
+        }
 
         get().calculateDailyNutrition();
       },
@@ -141,17 +259,55 @@ export const useFoodStore = create<FoodState>()((set, get) => ({
       loadFoodEntries: async (userId: string) => {
         try {
           set({ isLoading: true });
-          const entries = await firebaseService.getFoodEntries(userId);
-
-          if (entries && entries.length > 0) {
-            set({ foodEntries: entries, isLoading: false });
+          
+          // First try to load from local storage (fast)
+          const localEntries = await StorageService.loadFoodEntries(userId);
+          
+          if (localEntries && localEntries.length > 0) {
+            // Restore Date objects
+            const restoredEntries: FoodEntry[] = localEntries.map((entry: any) => ({
+              ...entry,
+              date: new Date(entry.date),
+              food: {
+                ...entry.food,
+              },
+            }));
+            
+            set({ foodEntries: restoredEntries, isLoading: false });
             get().calculateDailyNutrition();
+            
+            // Also try to sync from Firebase in background (optional)
+            firebaseService.getFoodEntries(userId).then(cloudEntries => {
+              if (cloudEntries && cloudEntries.length > 0) {
+                // Merge cloud entries with local (cloud takes precedence)
+                const merged = [...restoredEntries];
+                cloudEntries.forEach(cloudEntry => {
+                  const localIndex = merged.findIndex(e => e.id === cloudEntry.id);
+                  if (localIndex >= 0) {
+                    merged[localIndex] = cloudEntry;
+                  } else {
+                    merged.push(cloudEntry);
+                  }
+                });
+                set({ foodEntries: merged });
+                StorageService.saveFoodEntries(userId, merged);
+                get().calculateDailyNutrition();
+              }
+            }).catch(err => console.warn('⚠️ Firebase sync failed:', err));
           } else {
-            set({ isLoading: false });
+            // No local entries, try Firebase
+            const cloudEntries = await firebaseService.getFoodEntries(userId);
+            if (cloudEntries && cloudEntries.length > 0) {
+              set({ foodEntries: cloudEntries, isLoading: false });
+              await StorageService.saveFoodEntries(userId, cloudEntries);
+              get().calculateDailyNutrition();
+            } else {
+              set({ isLoading: false });
+            }
           }
         } catch (error) {
           console.error('❌ Error loading food entries:', error);
-          set({ isLoading: false, error: 'Error cargando historial de comidas' });
+          set({ isLoading: false, error: 'Erro ao carregar histórico de comidas' });
         }
       },
 

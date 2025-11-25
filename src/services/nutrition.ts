@@ -30,7 +30,7 @@ export class NutritionService {
       },
       servingSize: {
         amount: 1,
-        unit: 'porción',
+        unit: 'porção',
         grams: 100,
       },
       category: 'prepared',

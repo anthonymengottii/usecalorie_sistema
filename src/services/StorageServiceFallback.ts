@@ -121,6 +121,19 @@ export class StorageService {
   }
 
   /**
+   * Remove food entries for a specific user
+   */
+  static async removeFoodEntries(userId: string): Promise<void> {
+    try {
+      const key = `${STORAGE_KEYS.FOOD_ENTRIES}:${userId}`;
+      await AsyncStorage.removeItem(key);
+    } catch (error) {
+      console.error('❌ Error removing food entries:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Clear all storage
    */
   static async clearAll(): Promise<void> {

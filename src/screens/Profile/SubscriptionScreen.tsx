@@ -39,7 +39,7 @@ export const SubscriptionScreen = () => {
             color={COLORS.text}
             onPress={() => navigation.goBack()}
           />
-          <Heading2 style={styles.screenTitle}>Suscripción</Heading2>
+          <Heading2 style={styles.screenTitle}>Assinatura</Heading2>
         </View>
 
         {/* Current Plan */}
@@ -50,82 +50,82 @@ export const SubscriptionScreen = () => {
           </View>
           <View style={styles.planDetails}>
             <View style={styles.planRow}>
-              <Caption color="textSecondary">Estado</Caption>
-              <BodyText style={[styles.planValue, { color: COLORS.success }]}>Activo</BodyText>
+              <Caption color="textSecondary">Status</Caption>
+              <BodyText style={[styles.planValue, { color: COLORS.success }]}>Ativo</BodyText>
             </View>
             <View style={styles.planRow}>
-              <Caption color="textSecondary">Próxima renovación</Caption>
-              <BodyText style={styles.planValue}>15 Nov 2025</BodyText>
+              <Caption color="textSecondary">Próxima renovação</Caption>
+              <BodyText style={styles.planValue}>15 nov 2025</BodyText>
             </View>
             <View style={styles.planRow}>
-              <Caption color="textSecondary">Precio</Caption>
-              <BodyText style={styles.planValue}>$1.50/mes</BodyText>
+              <Caption color="textSecondary">Preço</Caption>
+              <BodyText style={styles.planValue}>R$ 19,90/mês</BodyText>
             </View>
           </View>
         </Card>
 
         {/* Features */}
         <Card style={styles.featuresCard}>
-          <Heading3 style={styles.featuresTitle}>Beneficios Premium</Heading3>
+          <Heading3 style={styles.featuresTitle}>Benefícios Premium</Heading3>
           <View style={styles.featuresList}>
             <View style={styles.featureItem}>
               <MaterialIcons name="check-circle" size={20} color={COLORS.primary} />
-              <BodyText style={styles.featureText}>Escaneo ilimitado de alimentos</BodyText>
+              <BodyText style={styles.featureText}>Escaneamento ilimitado de alimentos</BodyText>
             </View>
             <View style={styles.featureItem}>
               <MaterialIcons name="check-circle" size={20} color={COLORS.primary} />
-              <BodyText style={styles.featureText}>Reconocimiento por IA avanzado</BodyText>
+              <BodyText style={styles.featureText}>Reconhecimento por IA avançado</BodyText>
             </View>
             <View style={styles.featureItem}>
               <MaterialIcons name="check-circle" size={20} color={COLORS.primary} />
-              <BodyText style={styles.featureText}>Análisis nutricional detallado</BodyText>
+              <BodyText style={styles.featureText}>Análise nutricional detalhada</BodyText>
             </View>
             <View style={styles.featureItem}>
               <MaterialIcons name="check-circle" size={20} color={COLORS.primary} />
-              <BodyText style={styles.featureText}>Reportes semanales personalizados</BodyText>
+              <BodyText style={styles.featureText}>Relatórios semanais personalizados</BodyText>
             </View>
             <View style={styles.featureItem}>
               <MaterialIcons name="check-circle" size={20} color={COLORS.primary} />
-              <BodyText style={styles.featureText}>Sin anuncios</BodyText>
+              <BodyText style={styles.featureText}>Sem anúncios</BodyText>
             </View>
             <View style={styles.featureItem}>
               <MaterialIcons name="check-circle" size={20} color={COLORS.primary} />
-              <BodyText style={styles.featureText}>Soporte prioritario</BodyText>
+              <BodyText style={styles.featureText}>Suporte prioritário</BodyText>
             </View>
           </View>
         </Card>
 
         {/* Pricing Comparison */}
         <Card style={styles.pricingCard}>
-          <Heading3 style={styles.pricingTitle}>¿Por qué CalorIA?</Heading3>
+          <Heading3 style={styles.pricingTitle}>Por que o CalorIA?</Heading3>
           <View style={styles.comparisonRow}>
             <View style={styles.comparisonItem}>
               <Caption color="textSecondary">CalorIA</Caption>
-              <BodyText style={[styles.comparisonPrice, { color: COLORS.primary }]}>$1.50/mes</BodyText>
+              <BodyText style={[styles.comparisonPrice, { color: COLORS.primary }]}>R$ 19,90/mês</BodyText>
             </View>
             <View style={styles.comparisonDivider} />
             <View style={styles.comparisonItem}>
-              <Caption color="textSecondary">Competencia</Caption>
-              <BodyText style={styles.comparisonPrice}>$5-7/mes</BodyText>
+              <Caption color="textSecondary">Concorrentes</Caption>
+              <BodyText style={styles.comparisonPrice}>R$ 30-50/mês</BodyText>
             </View>
           </View>
           <View style={styles.savingsBadge}>
             <MaterialIcons name="savings" size={20} color={COLORS.success} />
-            <BodyText style={styles.savingsText}>Ahorra hasta 70% con CalorIA</BodyText>
+            <BodyText style={styles.savingsText}>Economize até 70% com o CalorIA</BodyText>
           </View>
         </Card>
 
         {/* Actions */}
         <View style={styles.actionsSection}>
           <Button
-            title="Cambiar Plan"
+            title="Alterar plano"
             onPress={() => {}}
             variant="outline"
             fullWidth
             style={styles.actionButton}
           />
           <TouchableOpacity style={styles.cancelButton}>
-            <Caption color="error">Cancelar Suscripción</Caption>
+            <Caption color="error">Cancelar assinatura</Caption>
           </TouchableOpacity>
         </View>
 
@@ -133,7 +133,7 @@ export const SubscriptionScreen = () => {
         <Card style={styles.infoCard}>
           <MaterialIcons name="info-outline" size={20} color={COLORS.textSecondary} />
           <Caption color="textSecondary" style={styles.infoText}>
-            Puedes cancelar tu suscripción en cualquier momento. Seguirás teniendo acceso Premium hasta el final del período de facturación actual.
+            Você pode cancelar sua assinatura a qualquer momento. O acesso Premium continua até o fim do ciclo de cobrança atual.
           </Caption>
         </Card>
       </ScrollView>

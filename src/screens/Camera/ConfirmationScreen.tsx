@@ -25,13 +25,19 @@ import { useUserStore } from '../../store/userStore';
 import { firebaseService } from '../../services/FirebaseService';
 import { useNavigation } from '../../utils/navigation';
 import { COLORS, SPACING } from '../../utils/constants';
-import type { FoodRecognitionResult, MealType, FoodEntry } from '../../types';
+import type {
+  FoodRecognitionResult,
+  MealType,
+  FoodEntry,
+  Food,
+  RecognizedFoodAlternative,
+} from '../../types';
 
 const MEAL_TYPES: { value: MealType; label: string; emoji: string }[] = [
-  { value: 'breakfast', label: 'Desayuno', emoji: '🌅' },
-  { value: 'lunch', label: 'Almuerzo', emoji: '☀️' },
-  { value: 'dinner', label: 'Cena', emoji: '🌙' },
-  { value: 'snack', label: 'Snack', emoji: '🍪' },
+  { value: 'breakfast', label: 'Café da manhã', emoji: '🌅' },
+  { value: 'lunch', label: 'Almoço', emoji: '☀️' },
+  { value: 'dinner', label: 'Jantar', emoji: '🌙' },
+  { value: 'snack', label: 'Lanche', emoji: '🍪' },
 ];
 
 export const ConfirmationScreen = () => {
@@ -50,16 +56,38 @@ export const ConfirmationScreen = () => {
     return null;
   }
 
-  const [selectedFood, setSelectedFood] = useState(recognitionResult.detectedFood || 'Alimento Desconocido');
+  const initialFood: Food = recognitionResult.detectedFood || {
+    id: `food_${Date.now()}`,
+    name: 'Alimento desconhecido',
+    brand: 'CalorIA',
+    barcode: undefined,
+    nutrition: recognitionResult.nutrition,
+    servingSize: {
+      amount: 1,
+      unit: 'porção',
+      grams: 100,
+    },
+    category: 'unknown',
+    verified: false,
+  };
+
+  const [selectedFood, setSelectedFood] = useState<Food>(initialFood);
   const [selectedMealType, setSelectedMealType] = useState<MealType>('lunch');
-  const [portionAmount, setPortionAmount] = useState(recognitionResult.suggestedPortion?.amount?.toString() || '1');
-  const [portionUnit, setPortionUnit] = useState(recognitionResult.suggestedPortion?.unit || 'porción');
+  const [portionAmount, setPortionAmount] = useState(
+    recognitionResult.suggestedPortion?.amount?.toString() || '1'
+  );
+  const [portionUnit, setPortionUnit] = useState(
+    recognitionResult.suggestedPortion?.unit || selectedFood.servingSize?.unit || 'porção'
+  );
   const [notes, setNotes] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   // Get food details from service
-  const foodDetails = CameraService.getFoodById(selectedFood.id);
-  const basePortionGrams = recognitionResult.suggestedPortion?.grams || 100; // Grams per 1 serving
+  const foodDetails = CameraService.getFoodById(selectedFood.id) || selectedFood;
+  const basePortionGrams =
+    recognitionResult.suggestedPortion?.grams ||
+    foodDetails.servingSize?.grams ||
+    100;
 
   // Calculate nutrition based on portion
   const calculateNutrition = () => {
@@ -94,7 +122,7 @@ export const ConfirmationScreen = () => {
 
   const handleSaveFood = async () => {
     if (!user) {
-      Alert.alert('Error', 'Debes iniciar sesión para guardar alimentos');
+      Alert.alert('Erro', 'Você precisa estar logado para salvar alimentos');
       return;
     }
 
@@ -120,36 +148,17 @@ export const ConfirmationScreen = () => {
         ...(notes.trim() && { notes: notes.trim() }),
       };
 
-      const entryId = await firebaseService.saveFoodEntry(foodEntry);
+      // Save entry (foodStore will handle persistence and stats update)
+      await addFoodEntry(foodEntry);
 
-      if (entryId) {
-        addFoodEntry(foodEntry);
-
-        await firebaseService.updateStreak(user.id);
-
-        const stats = user.stats || {
-          currentStreak: 0,
-          longestStreak: 0,
-          totalDaysTracked: 0,
-          totalMealsLogged: 0,
-          avgCaloriesPerDay: 0,
-          lastActivityDate: new Date(),
-        };
-
-        await firebaseService.saveUserStats(user.id, {
-          ...stats,
-          totalMealsLogged: stats.totalMealsLogged + 1,
-        });
-
-        console.log('✅ Food entry saved successfully to Firestore');
-      }
+      console.log('✅ Food entry saved successfully');
 
       Alert.alert(
-        '¡Éxito! 🎉',
-        `${selectedFood.name} ha sido agregado a tu historial nutricional.`,
+        'Sucesso! 🎉',
+        `${selectedFood.name} foi adicionado ao seu histórico nutricional.`,
         [
           {
-            text: 'Ver Historial',
+            text: 'Ver histórico',
             onPress: () => {
               navigation.reset({
                 index: 0,
@@ -158,7 +167,7 @@ export const ConfirmationScreen = () => {
             },
           },
           {
-            text: 'Agregar Más',
+            text: 'Adicionar outro',
             onPress: () => {
               navigation.reset({
                 index: 0,
@@ -172,8 +181,8 @@ export const ConfirmationScreen = () => {
     } catch (error) {
       console.error('Save error:', error);
       Alert.alert(
-        'Error',
-        'No se pudo guardar el alimento. Inténtalo de nuevo.',
+        'Erro',
+        'Não foi possível salvar o alimento. Tente novamente.',
         [{ text: 'OK' }]
       );
     } finally {
@@ -181,8 +190,9 @@ export const ConfirmationScreen = () => {
     }
   };
 
-  const handleAlternativeFood = (alternativeFood: any) => {
+  const handleAlternativeFood = (alternativeFood: RecognizedFoodAlternative) => {
     setSelectedFood(alternativeFood.food);
+    setPortionUnit(alternativeFood.food.servingSize?.unit || portionUnit);
   };
 
   const getConfidenceColor = (confidence: number) => {
@@ -193,10 +203,10 @@ export const ConfirmationScreen = () => {
   };
 
   const getConfidenceLabel = (confidence: number) => {
-    if (confidence >= 0.9) return 'Muy Alta';
+    if (confidence >= 0.9) return 'Muito alta';
     if (confidence >= 0.8) return 'Alta';
-    if (confidence >= 0.7) return 'Media';
-    return 'Baja';
+    if (confidence >= 0.7) return 'Média';
+    return 'Baixa';
   };
 
   return (
@@ -204,9 +214,9 @@ export const ConfirmationScreen = () => {
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <Heading2 style={styles.title}>Confirma tu Comida</Heading2>
+          <Heading2 style={styles.title}>Confirme sua refeição</Heading2>
           <Caption color="textSecondary">
-            Revisa y edita la información antes de guardar
+            Revise e edite as informações antes de salvar
           </Caption>
         </View>
 
@@ -220,9 +230,7 @@ export const ConfirmationScreen = () => {
             />
             <View style={styles.resultInfo}>
               <View style={styles.detectionBadge}>
-                <BodyText style={styles.detectionEmoji}>
-                  {foodDetails?.emoji || '🍽️'}
-                </BodyText>
+                <BodyText style={styles.detectionEmoji}>🍽️</BodyText>
                 <BodyText style={styles.detectionName}>
                   {selectedFood.name}
                 </BodyText>
@@ -245,7 +253,7 @@ export const ConfirmationScreen = () => {
         {recognitionResult.alternatives.length > 0 && (
           <Card style={styles.alternativesCard}>
             <Heading3 style={styles.sectionTitle}>
-              ¿No es correcto? Prueba estas opciones:
+              Não está correto? Experimente estas opções:
             </Heading3>
             <ScrollView horizontal showsHorizontalScrollIndicator={Boolean(false)}>
               <View style={styles.alternatives}>
@@ -257,9 +265,7 @@ export const ConfirmationScreen = () => {
                       style={styles.alternativeItem}
                       onPress={() => handleAlternativeFood(alt)}
                     >
-                      <BodyText style={styles.alternativeEmoji}>
-                        {altDetails?.emoji || '🍽️'}
-                      </BodyText>
+                        <BodyText style={styles.alternativeEmoji}>🍽️</BodyText>
                       <Caption style={styles.alternativeName}>
                         {alt.food.name}
                       </Caption>
@@ -276,11 +282,11 @@ export const ConfirmationScreen = () => {
 
         {/* Portion Editor */}
         <Card style={styles.portionCard}>
-          <Heading3 style={styles.sectionTitle}>Cantidad Consumida</Heading3>
+          <Heading3 style={styles.sectionTitle}>Quantidade consumida</Heading3>
           <View style={styles.portionEditor}>
             <View style={styles.portionInputs}>
               <View style={styles.portionInput}>
-                <Caption color="textSecondary">Cantidad</Caption>
+                <Caption color="textSecondary">Quantidade</Caption>
                 <TextInput
                   value={portionAmount}
                   onChangeText={setPortionAmount}
@@ -290,7 +296,7 @@ export const ConfirmationScreen = () => {
                 />
               </View>
               <View style={styles.portionUnit}>
-                <Caption color="textSecondary">Unidad</Caption>
+                <Caption color="textSecondary">Unidade</Caption>
                 <BodyText style={styles.unitText}>{portionUnit}</BodyText>
               </View>
             </View>
@@ -302,7 +308,7 @@ export const ConfirmationScreen = () => {
 
         {/* Meal Type Selector */}
         <Card style={styles.mealTypeCard}>
-          <Heading3 style={styles.sectionTitle}>Tipo de Comida</Heading3>
+          <Heading3 style={styles.sectionTitle}>Tipo de refeição</Heading3>
           <View style={styles.mealTypes}>
             {MEAL_TYPES.map((mealType) => (
               <TouchableOpacity
@@ -329,13 +335,13 @@ export const ConfirmationScreen = () => {
 
         {/* Nutrition Summary */}
         <Card style={styles.nutritionCard}>
-          <Heading3 style={styles.sectionTitle}>Información Nutricional</Heading3>
+          <Heading3 style={styles.sectionTitle}>Informações nutricionais</Heading3>
           <View style={styles.nutritionGrid}>
             <View style={styles.nutritionItem}>
               <BodyText style={styles.nutritionValue}>
                 {Math.round(currentNutrition.calories)}
               </BodyText>
-              <Caption color="textSecondary">Calorías</Caption>
+              <Caption color="textSecondary">Calorias</Caption>
             </View>
             <View style={styles.nutritionItem}>
               <BodyText style={styles.nutritionValue}>
@@ -347,13 +353,13 @@ export const ConfirmationScreen = () => {
               <BodyText style={styles.nutritionValue}>
                 {Math.round(currentNutrition.carbs)}g
               </BodyText>
-              <Caption color="textSecondary">Carbos</Caption>
+              <Caption color="textSecondary">Carboidratos</Caption>
             </View>
             <View style={styles.nutritionItem}>
               <BodyText style={styles.nutritionValue}>
                 {Math.round(currentNutrition.fat)}g
               </BodyText>
-              <Caption color="textSecondary">Grasas</Caption>
+              <Caption color="textSecondary">Gorduras</Caption>
             </View>
           </View>
           
@@ -361,8 +367,8 @@ export const ConfirmationScreen = () => {
             <View style={styles.additionalNutrition}>
               <Caption color="textSecondary">
                 Fibra: {Math.round(currentNutrition.fiber)}g • 
-                Azúcar: {Math.round(currentNutrition.sugar)}g • 
-                Sodio: {Math.round(currentNutrition.sodium)}mg
+                Açúcar: {Math.round(currentNutrition.sugar)}g • 
+                Sódio: {Math.round(currentNutrition.sodium)}mg
               </Caption>
             </View>
           )}
@@ -370,27 +376,27 @@ export const ConfirmationScreen = () => {
 
         {/* Notes */}
         <Card style={styles.notesCard}>
-          <Heading3 style={styles.sectionTitle}>Notas (Opcional)</Heading3>
+          <Heading3 style={styles.sectionTitle}>Notas (opcional)</Heading3>
           <TextInput
             value={notes}
             onChangeText={setNotes}
-            placeholder="Agregar notas sobre esta comida..."
+            placeholder="Adicionar observações sobre esta refeição..."
             multiline={true}
             numberOfLines={3}
-            style={styles.notesInput}
+            inputStyle={styles.notesInput}
           />
         </Card>
 
         {/* Action Buttons */}
         <View style={styles.actions}>
           <Button
-            title="Volver a Tomar Foto"
+            title="Tirar outra foto"
             onPress={() => navigation.goBack()}
             variant="outline"
             style={styles.actionButton}
           />
           <Button
-            title={isLoading ? "Guardando..." : "Guardar Comida"}
+            title={isLoading ? "Salvando..." : "Salvar refeição"}
             onPress={handleSaveFood}
             disabled={isLoading}
             style={[styles.actionButton, styles.saveButton]}

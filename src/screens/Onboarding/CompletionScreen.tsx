@@ -8,17 +8,13 @@ import {
   View,
   StyleSheet,
   Animated,
-  ScrollView,
-  Text,
-  TouchableOpacity,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 
-import { Card } from '../../components/UI/Card';
 import { Button } from '../../components/UI/Button';
-import { Heading1, Heading2, Heading3, BodyText, Caption } from '../../components/UI/Typography';
+import { Heading1, Heading2, BodyText, Caption } from '../../components/UI/Typography';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useUserStore } from '../../store/userStore';
 import { useFoodStore } from '../../store/foodStore';
 import { firebaseService } from '../../services/FirebaseService';
@@ -29,7 +25,14 @@ export const CompletionScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const params = route.params as { userProfile?: any; nutritionGoals?: any };
-  const userProfile = params.userProfile || null;
+  const userProfile = params.userProfile
+    ? {
+        ...params.userProfile,
+        targetDate: params.userProfile.targetDate
+          ? new Date(params.userProfile.targetDate)
+          : params.userProfile.targetDate,
+      }
+    : null;
   const nutritionGoals = params.nutritionGoals || null;
   const { completeOnboarding, updateProfile } = useUserStore();
   const { updateNutritionGoals } = useFoodStore();
@@ -68,7 +71,7 @@ export const CompletionScreen = () => {
       const user = useUserStore.getState().user;
       if (!user) {
         console.error('❌ No user found in store');
-        Alert.alert('Error', 'No se encontró el usuario. Por favor inicia sesión nuevamente.');
+      Alert.alert('Erro', 'Usuário não encontrado. Faça login novamente.');
         setIsLoading(false);
         return;
       }
@@ -105,7 +108,7 @@ export const CompletionScreen = () => {
             },
             createdAt: new Date(),
             updatedAt: new Date(),
-          }, true);
+          });
 
           const statsSaved = await firebaseService.saveUserStats(user.id, {
             currentStreak: 0,
@@ -169,9 +172,14 @@ export const CompletionScreen = () => {
       await completeOnboarding();
       setIsLoading(false);
 
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Main' as const }],
+      });
+
     } catch (error) {
       console.error('❌ CRITICAL ERROR completing onboarding:', error);
-      Alert.alert('Error', 'Hubo un problema al completar el onboarding. Por favor intenta nuevamente.');
+      Alert.alert('Erro', 'Ocorreu um problema ao concluir o onboarding. Tente novamente.');
       setIsLoading(false);
     }
   };
@@ -182,66 +190,68 @@ export const CompletionScreen = () => {
   };
 
   return (
-    <View style={{
-      flex: 1,
-      backgroundColor: '#F7FAFC',
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: 20,
-    }}>
-      <Text style={{
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#00C896',
-        marginBottom: 30,
-        textAlign: 'center',
-      }}>
-        🎉 ¡Perfecto!
-      </Text>
-      
-      <Text style={{
-        fontSize: 18,
-        color: '#718096',
-        marginBottom: 40,
-        textAlign: 'center',
-      }}>
-        Tu perfil nutricional personalizado está listo
-      </Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        {/* Success Icon */}
+        <Animated.View
+          style={[
+            styles.successIconContainer,
+            {
+              transform: [{ scale: scaleAnim }],
+            },
+          ]}
+        >
+          <BodyText style={styles.successEmoji}>🎉</BodyText>
+        </Animated.View>
 
-      <TouchableOpacity
-        onPress={handleGetStarted}
-        disabled={isLoading}
-        style={{
-          backgroundColor: isLoading ? '#A0A0A0' : '#00C896',
-          paddingHorizontal: 40,
-          paddingVertical: 15,
-          borderRadius: 8,
-          width: '100%',
-          alignItems: 'center',
-          flexDirection: 'row',
-          justifyContent: 'center',
-          gap: 10,
-        }}
-      >
-        {isLoading && <ActivityIndicator color="white" />}
-        <Text style={{
-          color: 'white',
-          fontSize: 18,
-          fontWeight: 'bold',
-        }}>
-          {isLoading ? 'Guardando...' : '¡Comenzar mi viaje saludable!'}
-        </Text>
-      </TouchableOpacity>
-      
-      <Text style={{
-        fontSize: 12,
-        color: '#718096',
-        marginTop: 15,
-        textAlign: 'center',
-      }}>
-        Puedes modificar estos objetivos en cualquier momento desde tu perfil
-      </Text>
-    </View>
+        {/* Title and Description */}
+        <Animated.View style={{ opacity: fadeAnim }}>
+          <Heading1 style={styles.title}>Perfeito!</Heading1>
+          <BodyText align="center" color="textSecondary" style={styles.subtitle}>
+            Seu perfil nutricional personalizado{'\n'}está pronto para começar
+          </BodyText>
+        </Animated.View>
+
+        {/* Summary Stats */}
+        {userProfile && nutritionGoals && (
+          <Animated.View style={[styles.summaryContainer, { opacity: fadeAnim }]}>
+            <View style={styles.summaryGrid}>
+              <View style={styles.summaryItem}>
+                <BodyText style={styles.summaryValue}>
+                  {nutritionGoals.calories}
+                </BodyText>
+                <Caption color="textSecondary" style={styles.summaryLabel}>
+                  Calorias/dia
+                </Caption>
+              </View>
+              <View style={styles.summaryItem}>
+                <BodyText style={styles.summaryValue}>
+                  {userProfile.targetWeight}kg
+                </BodyText>
+                <Caption color="textSecondary" style={styles.summaryLabel}>
+                  Meta de peso
+                </Caption>
+              </View>
+            </View>
+          </Animated.View>
+        )}
+      </View>
+
+      {/* Action Button - Fixed at bottom */}
+      <View style={styles.actionsContainer}>
+        <Button
+          title={isLoading ? 'Salvando...' : 'Começar minha jornada'}
+          onPress={handleGetStarted}
+          size="large"
+          fullWidth
+          loading={isLoading}
+          disabled={isLoading}
+        />
+        <Caption align="center" color="textSecondary" style={styles.disclaimer}>
+          Você pode alterar essas metas a qualquer momento no seu perfil
+        </Caption>
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -249,37 +259,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-    paddingTop: 60, // Add padding to account for status bar + notch
   },
   content: {
     flex: 1,
-    padding: SPACING.lg,
+    padding: SPACING.xl,
     justifyContent: 'center',
+    alignItems: 'center',
   },
-  heroSection: {
+  successIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: COLORS.primary + '15',
+    justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.xl,
   },
-  successIcon: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: COLORS.success,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: SPACING.lg,
-    shadowColor: COLORS.success,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 12,
-  },
   successEmoji: {
-    fontSize: 48,
-    color: COLORS.surface,
+    fontSize: 64,
+    lineHeight: 80,
+    textAlign: 'center',
   },
   title: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: '700',
     color: COLORS.primary,
     marginBottom: SPACING.md,
@@ -288,112 +290,48 @@ const styles = StyleSheet.create({
   subtitle: {
     textAlign: 'center',
     paddingHorizontal: SPACING.lg,
-    lineHeight: 22,
+    lineHeight: 24,
+    fontSize: 16,
+    marginBottom: SPACING.xl * 2,
   },
-  summarySection: {
-    gap: SPACING.sm,
+  summaryContainer: {
+    width: '100%',
+    marginTop: SPACING.xl,
   },
-  summaryCard: {
-    backgroundColor: COLORS.surface,
-  },
-  summaryTitle: {
-    marginBottom: SPACING.md,
-    textAlign: 'center',
-  },
-  profileStats: {
-    alignItems: 'center',
-  },
-  statRow: {
+  summaryGrid: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    width: '100%',
+    gap: SPACING.md,
   },
-  statItem: {
+  summaryItem: {
+    flex: 1,
     alignItems: 'center',
+    padding: SPACING.lg,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
-  statValue: {
-    fontSize: 18,
+  summaryValue: {
+    fontSize: 28,
     fontWeight: '700',
     color: COLORS.primary,
     marginBottom: SPACING.xs,
   },
-  goalsCard: {
-    backgroundColor: COLORS.primary,
+  summaryLabel: {
+    fontSize: 13,
+    fontWeight: '500',
   },
-  goalsTitle: {
-    marginBottom: SPACING.md,
-    textAlign: 'center',
-    color: COLORS.surface,
-  },
-  goalsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  goalItem: {
-    alignItems: 'center',
-  },
-  goalValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.surface,
-    marginBottom: SPACING.xs,
-  },
-  nextStepsCard: {},
-  nextStepsTitle: {
-    marginBottom: SPACING.md,
-  },
-  stepsList: {
-    gap: SPACING.md,
-  },
-  stepItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: SPACING.md,
-  },
-  stepEmoji: {
-    fontSize: 24,
-    marginTop: 2,
-  },
-  stepContent: {
-    flex: 1,
-  },
-  stepTitle: {
-    fontWeight: '600',
-    marginBottom: SPACING.xs,
-  },
-  trialCard: {
-    backgroundColor: COLORS.success,
-  },
-  trialContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.md,
-  },
-  trialEmoji: {
-    fontSize: 28,
-  },
-  trialText: {
-    flex: 1,
-  },
-  trialTitle: {
-    fontWeight: '600',
-    color: COLORS.surface,
-    marginBottom: SPACING.xs,
-  },
-  actionSection: {
+  actionsContainer: {
+    padding: SPACING.xl,
     paddingTop: SPACING.lg,
-    gap: SPACING.md,
-  },
-  startButton: {
-    backgroundColor: COLORS.primary,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 10,
+    backgroundColor: COLORS.background,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
   },
   disclaimer: {
     fontSize: 12,
+    marginTop: SPACING.md,
     paddingHorizontal: SPACING.md,
   },
 });

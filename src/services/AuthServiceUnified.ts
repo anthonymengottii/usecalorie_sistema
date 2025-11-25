@@ -30,7 +30,7 @@ export class AuthServiceUnified {
       console.error('❌ Sign in error:', error);
       return {
         success: false,
-        error: error.message || 'Error al iniciar sesión',
+        error: error.message || 'Erro ao iniciar sessão',
       };
     }
   }
@@ -40,7 +40,7 @@ export class AuthServiceUnified {
    */
   static async signUpWithEmail(email: string, password: string, displayName?: string): Promise<AuthResult> {
     try {
-      const authResult = await AuthService.signUpWithEmail(email, password);
+      const authResult = await AuthService.signUpWithEmail(email, password, displayName);
       
       const user: User = {
         id: authResult.id,
@@ -58,7 +58,7 @@ export class AuthServiceUnified {
       console.error('❌ Sign up error:', error);
       return {
         success: false,
-        error: error.message || 'Error al registrar usuario',
+        error: error.message || 'Erro ao realizar cadastro',
       };
     }
   }
@@ -86,7 +86,7 @@ export class AuthServiceUnified {
       console.error('❌ Google sign in error:', error);
       return {
         success: false,
-        error: error.message || 'Error al iniciar sesión con Google',
+        error: error.message || 'Erro ao entrar com o Google',
       };
     }
   }
@@ -114,7 +114,7 @@ export class AuthServiceUnified {
       console.error('❌ Apple sign in error:', error);
       return {
         success: false,
-        error: error.message || 'Error al iniciar sesión con Apple',
+        error: error.message || 'Erro ao entrar com a Apple',
       };
     }
   }

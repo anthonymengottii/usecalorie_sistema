@@ -3,28 +3,39 @@
  * Simulates Firebase functionality for demo purposes
  */
 
+import { LocalAuthRepository } from './LocalAuthRepository';
+import type { UserProfile, UserStats } from '../types';
+
+type StoredProfile = (UserProfile & {
+  onboardingCompleted?: boolean;
+  stats?: UserStats;
+}) | null;
+
+const mapStoredUser = (storedUser: any) => ({
+  id: storedUser.id,
+  email: storedUser.email,
+  displayName: storedUser.displayName || 'Usuário CalorIA',
+  photoURL: storedUser.photoURL,
+  createdAt: new Date(storedUser.createdAt),
+});
+
 export class AuthService {
   static async signInWithEmail(email: string, password: string) {
-    // Mock authentication - always succeeds for demo
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return {
-      id: 'demo_user_123',
-      email,
-      displayName: 'Demo User',
-      createdAt: new Date(),
-    };
+    const storedUser = await LocalAuthRepository.verifyCredentials(email, password);
+    return mapStoredUser(storedUser);
   }
 
-  static async signUpWithEmail(email: string, password: string) {
-    return this.signInWithEmail(email, password);
+  static async signUpWithEmail(email: string, password: string, displayName?: string) {
+    const newUser = await LocalAuthRepository.createUser(email, password, displayName);
+    return mapStoredUser(newUser);
   }
 
   static async signInWithGoogle() {
-    return this.signInWithEmail('demo@caloria.app', 'demo');
+    return this.signInWithEmail('demo@caloria.app', 'demo123');
   }
 
   static async signInWithApple() {
-    return this.signInWithEmail('demo@caloria.app', 'demo');
+    return this.signInWithEmail('demo@caloria.app', 'demo123');
   }
 
   static async signOut() {
@@ -33,12 +44,12 @@ export class AuthService {
 }
 
 export class FirestoreService {
-  static async saveUserProfile(userId: string, profile: any) {
+  static async saveUserProfile(userId: string, profile: Partial<UserProfile>) {
     console.log('Demo: Saving user profile locally');
     return profile;
   }
 
-  static async getUserProfile(userId: string) {
+  static async getUserProfile(userId: string): Promise<StoredProfile> {
     console.log('Demo: Getting user profile from local storage');
     return null;
   }

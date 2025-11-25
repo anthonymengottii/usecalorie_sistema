@@ -59,7 +59,7 @@ export const WaterIntakeWidget: React.FC<WaterIntakeWidgetProps> = ({
       <View style={styles.header}>
         <View style={styles.titleRow}>
           <MaterialIcons name="water-drop" size={24} color={COLORS.primary} style={styles.icon} />
-          <Heading3>Hidratación</Heading3>
+          <Heading3>Hidratação</Heading3>
         </View>
         <BodyText style={styles.percentage}>
           {Math.round(percentage)}%
@@ -89,7 +89,7 @@ export const WaterIntakeWidget: React.FC<WaterIntakeWidgetProps> = ({
           <BodyText style={styles.statValue}>
             {glassesConsumed}/{totalGlasses}
           </BodyText>
-          <Caption color="textSecondary">Vasos</Caption>
+          <Caption color="textSecondary">Copos</Caption>
         </View>
       </View>
 
@@ -112,7 +112,7 @@ export const WaterIntakeWidget: React.FC<WaterIntakeWidgetProps> = ({
           </Caption>
           {currentIntake < goalIntake && (
             <Caption color="textSecondary">
-              Faltan {Math.round(goalIntake - currentIntake)}ml
+              Faltam {Math.round(goalIntake - currentIntake)}ml
             </Caption>
           )}
         </View>
@@ -121,7 +121,7 @@ export const WaterIntakeWidget: React.FC<WaterIntakeWidgetProps> = ({
       {/* Quick add buttons */}
       <View style={styles.actionsSection}>
         <Caption color="textSecondary" style={styles.actionsLabel}>
-          Agregar agua rápido:
+          Adicionar água rapidamente:
         </Caption>
         <View style={styles.quickButtons}>
           {quickAmounts.map((amount) => (
@@ -144,21 +144,21 @@ export const WaterIntakeWidget: React.FC<WaterIntakeWidgetProps> = ({
         <View style={[styles.motivationSection, styles.successBanner]}>
           <MaterialIcons name="check-circle" size={20} color={COLORS.success} />
           <BodyText style={styles.successText}>
-            ¡Meta de hidratación alcanzada!
+            Meta de hidratação alcançada!
           </BodyText>
         </View>
       ) : percentage >= 80 ? (
         <View style={styles.motivationSection}>
           <MaterialIcons name="trending-up" size={16} color={COLORS.primary} style={styles.motivationIcon} />
           <Caption color="textSecondary" style={styles.motivationCaption}>
-            ¡Casi llegas! Solo faltan {Math.round((goalIntake - currentIntake) / 1000 * 10) / 10}L
+            Quase lá! Faltam apenas {Math.round((goalIntake - currentIntake) / 1000 * 10) / 10}L
           </Caption>
         </View>
       ) : (
         <View style={styles.motivationSection}>
           <MaterialIcons name="lightbulb" size={16} color={COLORS.textSecondary} style={styles.motivationIcon} />
           <Caption color="textSecondary" style={styles.motivationCaption}>
-            Tip: Toma agua regularmente durante el día
+            Dica: Beba água regularmente ao longo do dia
           </Caption>
         </View>
       )}

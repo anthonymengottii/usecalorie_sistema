@@ -119,13 +119,60 @@ export const useUserStore = create<UserState>()((set, get) => ({
       },
 
       logout: async () => {
-        await StorageService.removeUser();
-        set({
-          user: null,
-          isAuthenticated: false,
-          isLoading: false,
-          error: null,
-        });
+        try {
+          const currentUser = get().user;
+          const userId = currentUser?.id;
+          
+          // Clear food entries from storage for this user
+          if (userId) {
+            try {
+              await StorageService.removeFoodEntries(userId);
+            } catch (error) {
+              console.warn('⚠️ Error removing food entries:', error);
+            }
+          }
+          
+          // Clear food store data
+          const { useFoodStore } = await import('./foodStore');
+          useFoodStore.getState().setLoading(false);
+          useFoodStore.getState().setError(null);
+          useFoodStore.setState({
+            foodEntries: [],
+            todayStats: null,
+            waterIntake: 0,
+            lastRecognitionResult: null,
+          });
+          
+          // Clear user data from storage
+          await StorageService.removeUser();
+          
+          // Call auth service sign out
+          try {
+            const { AuthServiceUnified } = await import('../services/AuthServiceUnified');
+            await AuthServiceUnified.signOut();
+          } catch (authError) {
+            console.warn('⚠️ Auth sign out error (non-critical):', authError);
+          }
+          
+          // Reset user state
+          set({
+            user: null,
+            isAuthenticated: false,
+            isOnboardingCompleted: false,
+            isLoading: false,
+            error: null,
+          });
+        } catch (error) {
+          console.error('❌ Logout error:', error);
+          // Still reset state even if cleanup fails
+          set({
+            user: null,
+            isAuthenticated: false,
+            isOnboardingCompleted: false,
+            isLoading: false,
+            error: null,
+          });
+        }
       },
 
       loadUserFromStorage: async () => {
@@ -186,7 +233,7 @@ export const useUserStore = create<UserState>()((set, get) => ({
             user: null,
             isAuthenticated: false,
             isLoading: false,
-            error: 'Error cargando datos del usuario',
+          error: 'Erro ao carregar dados do usuário',
           });
         }
       },
@@ -197,7 +244,7 @@ export const useUserStore = create<UserState>()((set, get) => ({
           set({ isInitialized: true });
         } catch (error) {
           console.error('❌ Error initializing user store:', error);
-          set({ isInitialized: true, error: 'Error inicializando la aplicación' });
+        set({ isInitialized: true, error: 'Erro ao inicializar o aplicativo' });
         }
       },
     }));

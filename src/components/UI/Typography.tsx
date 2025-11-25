@@ -8,13 +8,14 @@ import {
   Text,
   StyleSheet,
   TextStyle,
+  StyleProp,
 } from 'react-native';
 import { FONT_SIZES, FONT_WEIGHTS } from '../../utils/constants';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface TypographyProps {
   children: React.ReactNode;
-  style?: TextStyle;
+  style?: StyleProp<TextStyle>;
   color?: 'text' | 'textSecondary' | 'primary' | 'secondary' | 'success' | 'error';
   align?: 'left' | 'center' | 'right';
   numberOfLines?: number;
